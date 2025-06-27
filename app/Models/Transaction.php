@@ -15,10 +15,10 @@ class Transaction extends Model
         'description',
         'amount',
         'type',
-        'date',
+        'transaction_date',
         'reference',
         'notes',
-        'transfer_account_id',
+        'to_account_id',
         'transfer_transaction_id',
         'is_recurring',
         'recurring_frequency',
@@ -27,7 +27,7 @@ class Transaction extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'date' => 'date',
+        'transaction_date' => 'date',
         'recurring_end_date' => 'date',
         'is_recurring' => 'boolean',
     ];
@@ -48,9 +48,9 @@ class Transaction extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function transferAccount(): BelongsTo
+    public function toAccount(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'transfer_account_id');
+        return $this->belongsTo(Account::class, 'to_account_id');
     }
 
     public function transferTransaction(): HasOne
@@ -86,7 +86,12 @@ class Transaction extends Model
 
     public function scopeForDateRange($query, $startDate, $endDate)
     {
-        return $query->whereBetween('date', [$startDate, $endDate]);
+        return $query->whereBetween('transaction_date', [$startDate, $endDate]);
+    }
+
+    public function scopeInDateRange($query, $start, $end)
+    {
+        return $query->whereBetween('transaction_date', [$start, $end]);
     }
 
     // Accessors
@@ -108,5 +113,69 @@ class Transaction extends Model
     public function getIsTransferAttribute()
     {
         return $this->type === 'transfer';
+    }
+
+    // Model Events for Balance Updates
+    protected static function booted()
+    {
+        static::created(function ($transaction) {
+            $transaction->updateAccountBalance();
+        });
+
+        static::updated(function ($transaction) {
+            $transaction->updateAccountBalance();
+        });
+
+        static::deleted(function ($transaction) {
+            $transaction->reverseAccountBalance();
+        });
+    }
+
+    /**
+     * Update account balance based on transaction
+     */
+    public function updateAccountBalance()
+    {
+        $account = $this->account;
+        
+        // Calculate total balance for this account
+        $balance = $account->transactions()
+            ->where('type', 'income')->sum('amount') -
+            $account->transactions()
+            ->where('type', 'expense')->sum('amount');
+            
+        // Handle transfers
+        $transfersIn = $account->transactions()
+            ->where('type', 'transfer')
+            ->whereNotNull('transfer_account_id')
+            ->sum('amount');
+            
+        $transfersOut = Transaction::where('transfer_account_id', $account->id)
+            ->where('type', 'transfer')
+            ->sum('amount');
+            
+        $balance = $balance + $transfersIn - $transfersOut;
+        
+        $account->update(['balance' => $balance]);
+    }
+
+    /**
+     * Reverse account balance when transaction is deleted
+     */
+    public function reverseAccountBalance()
+    {
+        $account = $this->account;
+        
+        if ($this->type === 'income') {
+            $account->decrement('balance', $this->amount);
+        } elseif ($this->type === 'expense') {
+            $account->increment('balance', $this->amount);
+        } elseif ($this->type === 'transfer' && $this->transfer_account_id) {
+            $transferAccount = Account::find($this->transfer_account_id);
+            if ($transferAccount) {
+                $account->increment('balance', $this->amount);
+                $transferAccount->decrement('balance', $this->amount);
+            }
+        }
     }
 }

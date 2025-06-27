@@ -55,7 +55,7 @@
                             <!-- Date -->
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Date</label>
-                                <p class="text-gray-900">{{ $transaction->transaction_date ? $transaction->transaction_date->format('F j, Y') : 'N/A' }}</p>
+                                <p class="text-gray-900">{{ $transaction->date ? $transaction->date->format('F j, Y') : 'N/A' }}</p>
                             </div>
 
                             @if($transaction->reference)

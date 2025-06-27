@@ -76,8 +76,10 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Balance</p>
-                                <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">$0.00</p>
-                                <p class="text-xs text-green-600 dark:text-green-400 font-medium mt-1">+0.00% from last month</p>
+                                <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">${{ number_format($totalBalance, 2) }}</p>
+                                <p class="text-xs {{ $balanceChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium mt-1">
+                                    {{ $balanceChange >= 0 ? '+' : '' }}{{ number_format($balanceChange, 2) }}% from last month
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -97,8 +99,8 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">This Month Income</p>
-                                <p class="text-3xl font-bold text-green-600 dark:text-green-400 tracking-tight">$0.00</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">0 transactions</p>
+                                <p class="text-3xl font-bold text-green-600 dark:text-green-400 tracking-tight">${{ number_format($monthlyIncome, 2) }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">{{ $incomeTransactionCount }} {{ Str::plural('transaction', $incomeTransactionCount) }}</p>
                             </div>
                         </div>
                     </div>
@@ -118,8 +120,8 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">This Month Expenses</p>
-                                <p class="text-3xl font-bold text-red-600 dark:text-red-400 tracking-tight">$0.00</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">0 transactions</p>
+                                <p class="text-3xl font-bold text-red-600 dark:text-red-400 tracking-tight">${{ number_format($monthlyExpenses, 2) }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">{{ $expenseTransactionCount }} {{ Str::plural('transaction', $expenseTransactionCount) }}</p>
                             </div>
                         </div>
                     </div>
@@ -138,10 +140,10 @@
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Savings Goal</p>
-                                <p class="text-3xl font-bold text-purple-600 dark:text-purple-400 tracking-tight">0%</p>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Savings Rate</p>
+                                <p class="text-3xl font-bold text-purple-600 dark:text-purple-400 tracking-tight">{{ number_format(max(0, $savingsRate), 1) }}%</p>
                                 <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-2">
-                                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full" style="width: 0%"></div>
+                                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full" style="width: {{ min(100, max(0, $savingsRate)) }}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -157,22 +159,62 @@
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Recent Transactions</h3>
-                                <button class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
+                                <a href="{{ route('transactions.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
                                     View All
-                                </button>
+                                </a>
                             </div>
-                            <div class="text-center py-12">
-                                <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg class="h-10 w-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                    </svg>
+                            @if($recentTransactions->count() > 0)
+                                <div class="space-y-4">
+                                    @foreach($recentTransactions as $transaction)
+                                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                            <div class="flex items-center">
+                                                <div class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 {{ $transaction->type === 'income' ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900' }}">
+                                                    @if($transaction->category && $transaction->category->icon)
+                                                        <i class="fas fa-{{ $transaction->category->icon }} {{ $transaction->type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}"></i>
+                                                    @else
+                                                        <svg class="w-5 h-5 {{ $transaction->type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            @if($transaction->type === 'income')
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                                            @else
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
+                                                            @endif
+                                                        </svg>
+                                                    @endif
+                                                </div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $transaction->description }}</p>
+                                                    <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                                                        <span>{{ $transaction->account->name }}</span>
+                                                        <span>•</span>
+                                                        <span>{{ $transaction->category->name ?? 'Uncategorized' }}</span>
+                                                        <span>•</span>
+                                                        <span>{{ $transaction->date->format('M d') }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="font-bold {{ $transaction->type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                                    {{ $transaction->type === 'income' ? '+' : '-' }}${{ number_format($transaction->amount, 2) }}
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $transaction->date->diffForHumans() }}</p>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No transactions yet</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Start tracking your finances by adding your first transaction</p>
-                                <button class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg">
-                                    Add Transaction
-                                </button>
-                            </div>
+                            @else
+                                <div class="text-center py-12">
+                                    <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="h-10 w-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No transactions yet</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Start tracking your finances by adding your first transaction</p>
+                                    <a href="{{ route('transactions.create') }}" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg inline-block">
+                                        Add Transaction
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -182,7 +224,7 @@
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Quick Actions</h3>
                         <div class="space-y-4">
-                            <button class="w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-800/30 dark:hover:to-blue-700/30 transition-all duration-200 transform hover:scale-105 group">
+                            <a href="{{ route('transactions.create', ['type' => 'expense']) }}" class="block w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-800/30 dark:hover:to-blue-700/30 transition-all duration-200 transform hover:scale-105 group">
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:shadow-xl transition-shadow">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,9 +236,9 @@
                                         <p class="text-sm text-gray-600 dark:text-gray-400">Record a new expense</p>
                                     </div>
                                 </div>
-                            </button>
+                            </a>
 
-                            <button class="w-full text-left p-4 rounded-xl bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700 hover:from-green-100 hover:to-green-200 dark:hover:from-green-800/30 dark:hover:to-green-700/30 transition-all duration-200 transform hover:scale-105 group">
+                            <a href="{{ route('transactions.create', ['type' => 'income']) }}" class="block w-full text-left p-4 rounded-xl bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700 hover:from-green-100 hover:to-green-200 dark:hover:from-green-800/30 dark:hover:to-green-700/30 transition-all duration-200 transform hover:scale-105 group">
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:shadow-xl transition-shadow">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,23 +250,23 @@
                                         <p class="text-sm text-gray-600 dark:text-gray-400">Record new income</p>
                                     </div>
                                 </div>
-                            </button>
+                            </a>
 
-                            <button class="w-full text-left p-4 rounded-xl bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700 hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-800/30 dark:hover:to-purple-700/30 transition-all duration-200 transform hover:scale-105 group">
+                            <a href="{{ route('accounts.index') }}" class="block w-full text-left p-4 rounded-xl bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700 hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-800/30 dark:hover:to-purple-700/30 transition-all duration-200 transform hover:scale-105 group">
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:shadow-xl transition-shadow">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Set Budget</p>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Create monthly budget</p>
+                                        <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Manage Accounts</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">View and edit accounts</p>
                                     </div>
                                 </div>
-                            </button>
+                            </a>
 
-                            <button class="w-full text-left p-4 rounded-xl bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700 hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-800/30 dark:hover:to-orange-700/30 transition-all duration-200 transform hover:scale-105 group">
+                            <a href="{{ route('transactions.index') }}" class="block w-full text-left p-4 rounded-xl bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700 hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-800/30 dark:hover:to-orange-700/30 transition-all duration-200 transform hover:scale-105 group">
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:shadow-xl transition-shadow">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,12 +274,63 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">View Reports</p>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Analyze your finances</p>
+                                        <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">View Transactions</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Browse all transactions</p>
                                     </div>
                                 </div>
-                            </button>
+                            </a>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Account Breakdown -->
+                <div class="mt-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Account Breakdown</h3>
+                            <a href="{{ route('accounts.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm transition-colors">
+                                Manage Accounts
+                            </a>
+                        </div>
+                        
+                        @if($accountBreakdown->count() > 0)
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($accountBreakdown as $account)
+                                    <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <h4 class="font-semibold text-gray-900 dark:text-gray-100">{{ $account->name }}</h4>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 capitalize">{{ $account->type }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="font-bold text-lg {{ $account->balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                                    ${{ number_format($account->balance, 2) }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        @if($account->description)
+                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ $account->description }}</p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No accounts yet</h4>
+                                <p class="text-gray-600 dark:text-gray-400 mb-4">Create your first account to start tracking your finances.</p>
+                                <a href="{{ route('accounts.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Add Account
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

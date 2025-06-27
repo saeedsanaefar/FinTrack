@@ -15,7 +15,7 @@ class Transaction extends Model
         'description',
         'amount',
         'type',
-        'transaction_date',
+        'date',
         'reference',
         'notes',
         'to_account_id',
@@ -27,7 +27,7 @@ class Transaction extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'transaction_date' => 'date',
+        'date' => 'date',
         'recurring_end_date' => 'date',
         'is_recurring' => 'boolean',
     ];
@@ -86,12 +86,12 @@ class Transaction extends Model
 
     public function scopeForDateRange($query, $startDate, $endDate)
     {
-        return $query->whereBetween('transaction_date', [$startDate, $endDate]);
+        return $query->whereBetween('date', [$startDate, $endDate]);
     }
 
     public function scopeInDateRange($query, $start, $end)
     {
-        return $query->whereBetween('transaction_date', [$start, $end]);
+        return $query->whereBetween('date', [$start, $end]);
     }
 
     // Accessors

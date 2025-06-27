@@ -98,9 +98,9 @@
 
                         <!-- Transaction Date -->
                         <div class="mb-4">
-                            <x-input-label for="transaction_date" :value="__('Transaction Date')" />
-                            <x-text-input id="transaction_date" class="block mt-1 w-full" type="date" name="transaction_date" :value="old('transaction_date', date('Y-m-d'))" max="{{ date('Y-m-d') }}" required />
-                            <x-input-error :messages="$errors->get('transaction_date')" class="mt-2" />
+                            <x-input-label for="date" :value="__('Transaction Date')" />
+                            <x-text-input id="date" class="block mt-1 w-full" type="date" name="date" :value="old('date', date('Y-m-d'))" max="{{ date('Y-m-d') }}" required />
+                            <x-input-error :messages="$errors->get('date')" class="mt-2" />
                         </div>
 
                         <!-- Reference (Optional) -->

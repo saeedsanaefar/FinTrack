@@ -57,6 +57,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the transactions for the user.
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
      * Get the categories for the user.
      */
     public function categories(): HasMany
@@ -65,10 +73,39 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the transactions for the user.
+     * Get the total balance across all accounts.
      */
-    public function transactions(): HasMany
+    public function getTotalBalanceAttribute()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->accounts()->where('is_active', true)->sum('balance');
     }
+
+    /**
+     * Get the total income for a given period.
+     */
+    public function getTotalIncome($startDate = null, $endDate = null)
+    {
+        $query = $this->transactions()->where('type', 'income');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        return $query->sum('amount');
+    }
+
+    /**
+     * Get the total expenses for a given period.
+     */
+    public function getTotalExpenses($startDate = null, $endDate = null)
+    {
+        $query = $this->transactions()->where('type', 'expense');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        return $query->sum('amount');
+    }
+
 }

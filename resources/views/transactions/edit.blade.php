@@ -17,8 +17,8 @@
 
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg border border-gray-700">
+                <div class="p-6 text-gray-100">
                     <form method="POST" action="{{ route('transactions.update', $transaction) }}" id="transactionForm">
                         @csrf
                         @method('PUT')
@@ -26,7 +26,7 @@
                         <!-- Transaction Type -->
                         <div class="mb-4">
                             <x-input-label for="type" :value="__('Transaction Type')" />
-                            <select id="type" name="type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required onchange="updateCategoryOptions()">
+                            <select id="type" name="type" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required onchange="updateCategoryOptions()">
                                 <option value="">Select Transaction Type</option>
                                 <option value="income" {{ old('type', $transaction->type) == 'income' ? 'selected' : '' }}>Income</option>
                                 <option value="expense" {{ old('type', $transaction->type) == 'expense' ? 'selected' : '' }}>Expense</option>
@@ -38,7 +38,7 @@
                         <!-- Account -->
                         <div class="mb-4">
                             <x-input-label for="account_id" :value="__('From Account')" />
-                            <select id="account_id" name="account_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required onchange="updateAccountBalance()">
+                            <select id="account_id" name="account_id" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required onchange="updateAccountBalance()">
                                 <option value="">Select Account</option>
                                 @foreach(auth()->user()->accounts as $account)
                                     <option value="{{ $account->id }}" 
@@ -58,7 +58,7 @@
                         <!-- To Account (for transfers) -->
                         <div class="mb-4" id="to-account-section" style="display: none;">
                             <x-input-label for="to_account_id" :value="__('To Account')" />
-                            <select id="to_account_id" name="to_account_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select id="to_account_id" name="to_account_id" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Select Destination Account</option>
                                 @foreach(auth()->user()->accounts as $account)
                                     <option value="{{ $account->id }}" {{ old('to_account_id', $transaction->to_account_id) == $account->id ? 'selected' : '' }}>
@@ -72,7 +72,7 @@
                         <!-- Category -->
                         <div class="mb-4" id="category-section">
                             <x-input-label for="category_id" :value="__('Category')" />
-                            <select id="category_id" name="category_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select id="category_id" name="category_id" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Select Category</option>
                                 @foreach(auth()->user()->categories as $category)
                                     <option value="{{ $category->id }}" 
@@ -119,7 +119,7 @@
                         <!-- Notes (Optional) -->
                         <div class="mb-4">
                             <x-input-label for="notes" :value="__('Notes (Optional)')" />
-                            <textarea id="notes" name="notes" rows="3" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Additional notes about this transaction...">{{ old('notes', $transaction->notes) }}</textarea>
+                            <textarea id="notes" name="notes" rows="3" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Additional notes about this transaction...">{{ old('notes', $transaction->notes) }}</textarea>
                             <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                         </div>
 
@@ -140,7 +140,7 @@
                         <div id="recurring-options" style="display: {{ old('is_recurring', $transaction->is_recurring) ? 'block' : 'none' }};">
                             <div class="mb-4">
                                 <x-input-label for="recurring_frequency" :value="__('Frequency')" />
-                                <select id="recurring_frequency" name="recurring_frequency" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <select id="recurring_frequency" name="recurring_frequency" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                     <option value="weekly" {{ old('recurring_frequency', $transaction->recurring_frequency) == 'weekly' ? 'selected' : '' }}>Weekly</option>
                                     <option value="monthly" {{ old('recurring_frequency', $transaction->recurring_frequency) == 'monthly' ? 'selected' : '' }}>Monthly</option>
                                     <option value="quarterly" {{ old('recurring_frequency', $transaction->recurring_frequency) == 'quarterly' ? 'selected' : '' }}>Quarterly</option>

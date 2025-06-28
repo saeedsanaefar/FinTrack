@@ -14,22 +14,22 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Search and Filters -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
                 <form method="GET" action="{{ route('categories.index') }}" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Search -->
                         <div>
-                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                            <label for="search" class="block text-sm font-medium text-gray-300 mb-1">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}"
                                    placeholder="Search categories..."
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         
                         <!-- Type Filter -->
                         <div>
-                            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <label for="type" class="block text-sm font-medium text-gray-300 mb-1">Type</label>
                             <select name="type" id="type" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="all" {{ request('type') === 'all' ? 'selected' : '' }}>All Types</option>
                                 <option value="income" {{ request('type') === 'income' ? 'selected' : '' }}>Income</option>
                                 <option value="expense" {{ request('type') === 'expense' ? 'selected' : '' }}>Expense</option>
@@ -39,9 +39,9 @@
                         
                         <!-- Status Filter -->
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <label for="status" class="block text-sm font-medium text-gray-300 mb-1">Status</label>
                             <select name="status" id="status" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="" {{ request('status') === '' ? 'selected' : '' }}>All Status</option>
                                 <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -87,12 +87,12 @@
                 </div>
             @else
                 <!-- Empty State -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                    <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-12 text-center">
+                    <div class="mx-auto w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mb-4">
                         <i class="fas fa-folder-open text-3xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
-                    <p class="text-gray-500 mb-6">
+                    <h3 class="text-lg font-medium text-gray-100 mb-2">No categories found</h3>
+                    <p class="text-gray-400 mb-6">
                         @if(request()->hasAny(['search', 'type', 'status']))
                             No categories match your current filters. Try adjusting your search criteria.
                         @else

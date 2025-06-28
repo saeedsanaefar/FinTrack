@@ -17,8 +17,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg border border-gray-700">
+                <div class="p-6 text-gray-100">
                     <form method="POST" action="{{ route('categories.update', $category) }}" class="space-y-6">
                         @csrf
                         @method('PUT')
@@ -33,7 +33,7 @@
                         <!-- Type -->
                         <div>
                             <x-input-label for="type" :value="__('Category Type')" />
-                            <select id="type" name="type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                            <select id="type" name="type" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                                 <option value="">Select Type</option>
                                 <option value="income" {{ old('type', $category->type) == 'income' ? 'selected' : '' }}>Income</option>
                                 <option value="expense" {{ old('type', $category->type) == 'expense' ? 'selected' : '' }}>Expense</option>
@@ -58,7 +58,7 @@
                         <!-- Description -->
                         <div>
                             <x-input-label for="description" :value="__('Description (Optional)')" />
-                            <textarea id="description" name="description" rows="3" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $category->description) }}</textarea>
+                            <textarea id="description" name="description" rows="3" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $category->description) }}</textarea>
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 

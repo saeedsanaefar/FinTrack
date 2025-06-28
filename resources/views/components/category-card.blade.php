@@ -1,8 +1,8 @@
 @props(['category', 'showActions' => true])
 
-<div class="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+<div class="bg-gray-900 border border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
     <!-- Category Header -->
-    <div class="p-4 border-b border-gray-100">
+    <div class="p-4 border-b border-gray-700">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <!-- Category Icon -->
@@ -19,7 +19,7 @@
                 
                 <!-- Category Info -->
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-semibold text-gray-900 truncate">{{ $category->name }}</h3>
+                    <h3 class="text-lg font-semibold text-gray-100 truncate">{{ $category->name }}</h3>
                     <div class="flex items-center space-x-2">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                             @if($category->type === 'income') bg-green-100 text-green-800
@@ -45,14 +45,14 @@
                 </button>
                 
                 <div x-show="open" @click.away="open = false" x-transition
-                     class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                     class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-10 border border-gray-600">
                     <div class="py-1">
                         <a href="{{ route('categories.show', $category) }}" 
-                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                           class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
                             <i class="fas fa-eye mr-2"></i>View Details
                         </a>
                         <a href="{{ route('categories.edit', $category) }}" 
-                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                           class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
                             <i class="fas fa-edit mr-2"></i>Edit
                         </a>
                         <form action="{{ route('categories.destroy', $category) }}" method="POST" class="block">
@@ -60,7 +60,7 @@
                             @method('DELETE')
                             <button type="submit" 
                                     onclick="return confirm('Are you sure you want to delete this category?')"
-                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-900/20">
                                 <i class="fas fa-trash mr-2"></i>Delete
                             </button>
                         </form>

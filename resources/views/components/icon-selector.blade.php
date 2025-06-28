@@ -1,14 +1,14 @@
 @props(['selected' => null, 'name' => 'icon'])
 
 <div x-data="{ open: false, selected: '{{ $selected }}' }" class="relative">
-    <label class="block text-sm font-medium text-gray-700 mb-2">Category Icon</label>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Category Icon</label>
     
     <!-- Selected Icon Display -->
     <button @click="open = !open" type="button" 
-            class="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+            class="w-full flex items-center justify-between px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
         <div class="flex items-center">
-            <i :class="selected ? 'fas fa-' + selected : 'fas fa-question'" class="w-5 h-5 mr-2 text-gray-600"></i>
-            <span x-text="selected || 'Select an icon'" class="text-gray-900"></span>
+            <i :class="selected ? 'fas fa-' + selected : 'fas fa-question'" class="w-5 h-5 mr-2 text-gray-300"></i>
+            <span x-text="selected || 'Select an icon'" class="text-gray-100"></span>
         </div>
         <i class="fas fa-chevron-down text-gray-400"></i>
     </button>
@@ -18,7 +18,7 @@
     
     <!-- Icon Grid -->
     <div x-show="open" @click.away="open = false" x-transition
-         class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+         class="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
         <div class="grid grid-cols-6 gap-2 p-3">
             @php
             $icons = [
@@ -35,9 +35,9 @@
             
             @foreach($icons as $icon)
             <button type="button" @click="selected = '{{ $icon }}'; open = false"
-                    class="p-2 rounded hover:bg-gray-100 focus:outline-none focus:bg-blue-100 transition-colors"
-                    :class="{ 'bg-blue-100 ring-2 ring-blue-500': selected === '{{ $icon }}' }">
-                <i class="fas fa-{{ $icon }} text-gray-600"></i>
+                    class="p-2 rounded hover:bg-gray-700 focus:outline-none focus:bg-blue-900 transition-colors"
+                    :class="{ 'bg-blue-900 ring-2 ring-blue-500': selected === '{{ $icon }}' }">
+                <i class="fas fa-{{ $icon }} text-gray-300"></i>
             </button>
             @endforeach
         </div>

@@ -1,14 +1,14 @@
 @props(['selected' => '#3B82F6', 'name' => 'color'])
 
 <div x-data="{ open: false, selected: '{{ $selected }}' }" class="relative">
-    <label class="block text-sm font-medium text-gray-700 mb-2">Category Color</label>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Category Color</label>
     
     <!-- Selected Color Display -->
     <button @click="open = !open" type="button" 
-            class="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+            class="w-full flex items-center justify-between px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
         <div class="flex items-center">
             <div :style="'background-color: ' + selected" class="w-6 h-6 rounded-full border-2 border-gray-300 mr-3"></div>
-            <span x-text="selected" class="text-gray-900 font-mono text-sm"></span>
+            <span x-text="selected" class="text-gray-100 font-mono text-sm"></span>
         </div>
         <i class="fas fa-chevron-down text-gray-400"></i>
     </button>
@@ -18,11 +18,11 @@
     
     <!-- Color Grid -->
     <div x-show="open" @click.away="open = false" x-transition
-         class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg p-4">
+         class="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg p-4">
         
         <!-- Predefined Colors -->
         <div class="mb-4">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Predefined Colors</h4>
+            <h4 class="text-sm font-medium text-gray-300 mb-2">Predefined Colors</h4>
             <div class="grid grid-cols-8 gap-2">
                 @php
                 $colors = [
@@ -47,12 +47,12 @@
         
         <!-- Custom Color Input -->
         <div>
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Custom Color</h4>
+            <h4 class="text-sm font-medium text-gray-300 mb-2">Custom Color</h4>
             <div class="flex items-center space-x-2">
                 <input type="color" x-model="selected" 
-                       class="w-12 h-8 border border-gray-300 rounded cursor-pointer">
+                       class="w-12 h-8 border border-gray-600 rounded cursor-pointer bg-gray-800">
                 <input type="text" x-model="selected" 
-                       class="flex-1 px-3 py-1 border border-gray-300 rounded-md text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                       class="flex-1 px-3 py-1 border border-gray-600 bg-gray-800 text-gray-100 rounded-md text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                        placeholder="#000000">
             </div>
         </div>

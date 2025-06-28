@@ -6,6 +6,8 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\RecurringTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,6 +32,16 @@ Route::middleware('auth')->group(function () {
     // Budget specific routes
     Route::get('/budgets-alerts', [BudgetController::class, 'alerts'])->name('budgets.alerts');
     Route::post('/budgets-update-spent', [BudgetController::class, 'updateSpentAmounts'])->name('budgets.update-spent');
+    
+    // Attachment routes
+    Route::post('/transactions/{transaction}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
+    Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
+    Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+    
+    // Recurring Transaction routes
+    Route::resource('recurring-transactions', RecurringTransactionController::class);
+    Route::patch('/recurring-transactions/{recurringTransaction}/toggle', [RecurringTransactionController::class, 'toggle'])->name('recurring-transactions.toggle');
+    Route::post('/recurring-transactions/{recurringTransaction}/generate', [RecurringTransactionController::class, 'generate'])->name('recurring-transactions.generate');
 });
 
 require __DIR__.'/auth.php';

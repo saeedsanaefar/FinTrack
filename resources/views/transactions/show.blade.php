@@ -158,6 +158,76 @@
                         </div>
                     @endif
 
+                    <!-- Attachments -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <label class="block text-sm font-medium text-gray-700">Attachments</label>
+                            <button onclick="document.getElementById('file-upload-form').style.display = document.getElementById('file-upload-form').style.display === 'none' ? 'block' : 'none'" 
+                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                + Add File
+                            </button>
+                        </div>
+
+                        <!-- File Upload Form -->
+                        <div id="file-upload-form" style="display: none;" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <form action="{{ route('attachments.store', $transaction) }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="flex items-center space-x-4">
+                                    <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.gif" 
+                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                                           required>
+                                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+                                        Upload
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Supported formats: PDF, JPG, PNG, GIF (Max: 10MB)</p>
+                            </form>
+                        </div>
+
+                        <!-- Attachments List -->
+                        @if($transaction->attachments->count() > 0)
+                            <div class="space-y-2">
+                                @foreach($transaction->attachments as $attachment)
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="flex-shrink-0">
+                                                @if(str_contains($attachment->file_type, 'image'))
+                                                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">{{ $attachment->original_filename }}</p>
+                                                <p class="text-xs text-gray-500">{{ $attachment->file_size_formatted }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <a href="{{ route('attachments.download', $attachment) }}" 
+                                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                Download
+                                            </a>
+                                            <form method="POST" action="{{ route('attachments.destroy', $attachment) }}" class="inline" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this file?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-gray-500 text-sm">No attachments uploaded.</p>
+                        @endif
+                    </div>
+
                     <!-- Metadata -->
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">

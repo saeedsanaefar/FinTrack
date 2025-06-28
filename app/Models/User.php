@@ -78,6 +78,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the recurring transactions for the user.
+     */
+    public function recurringTransactions(): HasMany
+    {
+        return $this->hasMany(RecurringTransaction::class);
+    }
+
+    /**
      * Get the total balance across all accounts.
      */
     public function getTotalBalanceAttribute()

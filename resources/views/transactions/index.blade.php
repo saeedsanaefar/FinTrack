@@ -4,9 +4,9 @@
             <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Transactions') }}
             </h2>
-            <a href="{{ route('transactions.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <button onclick="openTransactionModal()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Add Transaction
-            </a>
+            </button>
         </div>
     </x-slot>
 
@@ -150,9 +150,9 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900">No transactions found</h3>
                             <p class="mt-1 text-sm text-gray-500">Get started by creating your first transaction.</p>
                             <div class="mt-6">
-                                <a href="{{ route('transactions.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                <button onclick="openTransactionModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
                                     Add Transaction
-                                </a>
+                                </button>
                             </div>
                         </div>
                     @endif
@@ -160,4 +160,217 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaction Modal -->
+    <div id="transactionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-gray-900">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-100">Add New Transaction</h3>
+                    <button onclick="closeTransactionModal()" class="text-gray-400 hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form method="POST" action="{{ route('transactions.store') }}" id="transactionModalForm" class="space-y-4">
+                    @csrf
+                    
+                    <!-- Transaction Type -->
+                    <div>
+                        <label for="modal_type" class="block text-sm font-medium text-gray-300 mb-1">Transaction Type</label>
+                        <select id="modal_type" name="type" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" required onchange="updateModalCategoryOptions()">
+                            <option value="">Choose transaction type...</option>
+                            <option value="income">💰 Income</option>
+                            <option value="expense">💸 Expense</option>
+                            <option value="transfer">🔄 Transfer</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Account -->
+                    <div>
+                        <label for="modal_account_id" class="block text-sm font-medium text-gray-300 mb-1">From Account</label>
+                        <select id="modal_account_id" name="account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Select account...</option>
+                            @foreach(auth()->user()->accounts as $account)
+                                <option value="{{ $account->id }}">
+                                    {{ $account->name }} ({{ number_format($account->balance, 2) }} {{ $account->currency }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- To Account (for transfers) -->
+                    <div id="modal-to-account-section" style="display: none;">
+                        <label for="modal_to_account_id" class="block text-sm font-medium text-gray-300 mb-1">To Account</label>
+                        <select id="modal_to_account_id" name="to_account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select destination account...</option>
+                            @foreach(auth()->user()->accounts as $account)
+                                <option value="{{ $account->id }}">
+                                    {{ $account->name }} ({{ number_format($account->balance, 2) }} {{ $account->currency }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- Category -->
+                    <div id="modal-category-section">
+                        <label for="modal_category_id" class="block text-sm font-medium text-gray-300 mb-1">Category</label>
+                        <select id="modal_category_id" name="category_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select category...</option>
+                            @foreach(auth()->user()->categories as $category)
+                                <option value="{{ $category->id }}" data-type="{{ $category->type }}">
+                                    {{ $category->icon }} {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- Amount -->
+                    <div>
+                        <label for="modal_amount" class="block text-sm font-medium text-gray-300 mb-1">Amount</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-400">$</span>
+                            <input type="number" id="modal_amount" name="amount" step="0.01" min="0.01" class="w-full pl-8 pr-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div>
+                        <label for="modal_description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                        <input type="text" id="modal_description" name="description" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Transaction description">
+                    </div>
+                    
+                    <!-- Date -->
+                    <div>
+                        <label for="modal_date" class="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                        <input type="date" id="modal_date" name="date" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    
+                    <!-- Reference -->
+                    <div>
+                        <label for="modal_reference" class="block text-sm font-medium text-gray-300 mb-1">Reference</label>
+                        <input type="text" id="modal_reference" name="reference" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Check number, invoice number, etc.">
+                        <p class="text-xs text-gray-400 mt-1">Optional reference number or identifier</p>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div>
+                        <label for="modal_notes" class="block text-sm font-medium text-gray-300 mb-1">Notes</label>
+                        <textarea id="modal_notes" name="notes" rows="2" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="Additional notes about this transaction..."></textarea>
+                        <p class="text-xs text-gray-400 mt-1">Optional additional details or notes</p>
+                    </div>
+                    
+                    <!-- Recurring Transaction -->
+                    <div class="flex items-center">
+                        <input id="modal_is_recurring" name="is_recurring" type="checkbox" value="1" class="h-4 w-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500 focus:ring-2" onchange="toggleModalRecurringOptions()">
+                        <label for="modal_is_recurring" class="ml-2 text-sm text-gray-300">
+                            🔄 Make this a recurring transaction
+                        </label>
+                    </div>
+                    
+                    <!-- Recurring Options -->
+                    <div id="modal-recurring-options" class="space-y-3 bg-blue-900 bg-opacity-50 border border-blue-600 rounded-lg p-3" style="display: none;">
+                        <h4 class="text-sm font-semibold text-blue-300">Recurring Settings</h4>
+                        
+                        <div>
+                            <label for="modal_recurring_frequency" class="block text-sm font-medium text-gray-300 mb-1">Frequency</label>
+                            <select id="modal_recurring_frequency" name="recurring_frequency" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="weekly">📅 Weekly</option>
+                                <option value="monthly" selected>🗓️ Monthly</option>
+                                <option value="quarterly">📊 Quarterly</option>
+                                <option value="yearly">🎯 Yearly</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="modal_recurring_end_date" class="block text-sm font-medium text-gray-300 mb-1">End Date</label>
+                            <input type="date" id="modal_recurring_end_date" name="recurring_end_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <p class="text-xs text-blue-300 mt-1">Leave empty for indefinite recurring</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeTransactionModal()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                            Add Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTransactionModal() {
+            document.getElementById('transactionModal').style.display = 'block';
+        }
+        
+        function closeTransactionModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+            document.getElementById('transactionModalForm').reset();
+            document.getElementById('modal-to-account-section').style.display = 'none';
+            document.getElementById('modal-category-section').style.display = 'block';
+            document.getElementById('modal-recurring-options').style.display = 'none';
+        }
+        
+        function toggleModalRecurringOptions() {
+            const checkbox = document.getElementById('modal_is_recurring');
+            const options = document.getElementById('modal-recurring-options');
+            const frequencySelect = document.getElementById('modal_recurring_frequency');
+            
+            if (checkbox.checked) {
+                options.style.display = 'block';
+                frequencySelect.required = true;
+            } else {
+                options.style.display = 'none';
+                frequencySelect.required = false;
+            }
+        }
+        
+        function updateModalCategoryOptions() {
+            const type = document.getElementById('modal_type').value;
+            const categorySelect = document.getElementById('modal_category_id');
+            const toAccountSection = document.getElementById('modal-to-account-section');
+            const categorySection = document.getElementById('modal-category-section');
+            
+            if (type === 'transfer') {
+                toAccountSection.style.display = 'block';
+                categorySection.style.display = 'none';
+                document.getElementById('modal_to_account_id').required = true;
+                categorySelect.required = false;
+            } else {
+                toAccountSection.style.display = 'none';
+                categorySection.style.display = 'block';
+                document.getElementById('modal_to_account_id').required = false;
+                categorySelect.required = true;
+                
+                // Filter categories by type
+                const options = categorySelect.querySelectorAll('option');
+                options.forEach(option => {
+                    if (option.value === '') {
+                        option.style.display = 'block';
+                    } else {
+                        const categoryType = option.getAttribute('data-type');
+                        if (type === '' || categoryType === type || categoryType === 'both') {
+                            option.style.display = 'block';
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('transactionModal');
+            if (event.target === modal) {
+                closeTransactionModal();
+            }
+        }
+    </script>
 </x-app-layout>

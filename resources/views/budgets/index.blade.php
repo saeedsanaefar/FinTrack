@@ -9,10 +9,10 @@
                    class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
                     <i class="fas fa-exclamation-triangle mr-2"></i>Budget Alerts
                 </a>
-                <a href="{{ route('budgets.create') }}"
-                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                <button onclick="openBudgetModal()"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
                     <i class="fas fa-plus mr-2"></i>Add New Budget
-                </a>
+                </button>
             </div>
         </div>
     </x-slot>
@@ -220,13 +220,184 @@
                                 <i class="fas fa-times mr-2"></i>Clear Filters
                             </a>
                         @endif
-                        <a href="{{ route('budgets.create') }}"
-                           class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                        <button onclick="openBudgetModal()"
+                                class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
                             <i class="fas fa-plus mr-2"></i>Create Your First Budget
-                        </a>
+                        </button>
                     </div>
                 </div>
             @endif
         </div>
     </div>
+
+    <!-- Budget Modal -->
+    <div id="budgetModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-5 border w-[500px] shadow-lg rounded-md bg-gray-900">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-100">Add New Budget</h3>
+                    <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="budgetForm" method="POST" action="{{ route('budgets.store') }}" class="space-y-4">
+                    @csrf
+                    
+                    <!-- Category -->
+                    <div>
+                        <label for="modal_category_id" class="block text-sm font-medium text-gray-300 mb-1">
+                            Category <span class="text-red-400">*</span>
+                        </label>
+                        <select name="category_id" id="modal_category_id" required
+                                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select a category</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- Budget Amount -->
+                    <div>
+                        <label for="modal_amount" class="block text-sm font-medium text-gray-300 mb-1">
+                            Budget Amount <span class="text-red-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-400">$</span>
+                            <input type="number" name="amount" id="modal_amount" step="0.01" min="0.01" required
+                                   placeholder="0.00"
+                                   class="w-full pl-8 pr-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <!-- Period Type -->
+                    <div>
+                        <label for="modal_period_type" class="block text-sm font-medium text-gray-300 mb-1">
+                            Budget Period <span class="text-red-400">*</span>
+                        </label>
+                        <select name="period_type" id="modal_period_type" required
+                                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Year -->
+                    <div>
+                        <label for="modal_year" class="block text-sm font-medium text-gray-300 mb-1">
+                            Year <span class="text-red-400">*</span>
+                        </label>
+                        <select name="year" id="modal_year" required
+                                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            @foreach($years as $year)
+                                <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- Month (for monthly budgets) -->
+                    <div id="modal-month-field">
+                        <label for="modal_month" class="block text-sm font-medium text-gray-300 mb-1">
+                            Month <span class="text-red-400">*</span>
+                        </label>
+                        <select name="month" id="modal_month" required
+                                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="1" {{ date('n') == 1 ? 'selected' : '' }}>January</option>
+                            <option value="2" {{ date('n') == 2 ? 'selected' : '' }}>February</option>
+                            <option value="3" {{ date('n') == 3 ? 'selected' : '' }}>March</option>
+                            <option value="4" {{ date('n') == 4 ? 'selected' : '' }}>April</option>
+                            <option value="5" {{ date('n') == 5 ? 'selected' : '' }}>May</option>
+                            <option value="6" {{ date('n') == 6 ? 'selected' : '' }}>June</option>
+                            <option value="7" {{ date('n') == 7 ? 'selected' : '' }}>July</option>
+                            <option value="8" {{ date('n') == 8 ? 'selected' : '' }}>August</option>
+                            <option value="9" {{ date('n') == 9 ? 'selected' : '' }}>September</option>
+                            <option value="10" {{ date('n') == 10 ? 'selected' : '' }}>October</option>
+                            <option value="11" {{ date('n') == 11 ? 'selected' : '' }}>November</option>
+                            <option value="12" {{ date('n') == 12 ? 'selected' : '' }}>December</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div>
+                        <label for="modal_notes" class="block text-sm font-medium text-gray-300 mb-1">
+                            Notes
+                        </label>
+                        <textarea name="notes" id="modal_notes" rows="2"
+                                  placeholder="Optional notes about this budget..."
+                                  class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    
+                    <!-- Active Status -->
+                    <div class="flex items-center">
+                        <input type="checkbox" name="is_active" id="modal_is_active" value="1" checked
+                               class="h-4 w-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500 focus:ring-2">
+                        <label for="modal_is_active" class="ml-2 text-sm text-gray-300">
+                            Active budget
+                        </label>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" onclick="closeBudgetModal()"
+                                class="px-4 py-2 bg-gray-600 text-gray-100 rounded-md hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-save mr-2"></i>Create Budget
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openBudgetModal() {
+            document.getElementById('budgetModal').classList.remove('hidden');
+            document.getElementById('modal_category_id').focus();
+        }
+        
+        function closeBudgetModal() {
+            document.getElementById('budgetModal').classList.add('hidden');
+            document.getElementById('budgetForm').reset();
+            // Reset to default values
+            document.getElementById('modal_period_type').value = 'monthly';
+            document.getElementById('modal_year').value = '{{ date('Y') }}';
+            document.getElementById('modal_month').value = '{{ date('n') }}';
+            document.getElementById('modal_is_active').checked = true;
+            // Show month field
+            document.getElementById('modal-month-field').style.display = 'block';
+            document.getElementById('modal_month').required = true;
+        }
+        
+        // Handle period type change
+        document.getElementById('modal_period_type').addEventListener('change', function() {
+            const monthField = document.getElementById('modal-month-field');
+            const monthSelect = document.getElementById('modal_month');
+            
+            if (this.value === 'monthly') {
+                monthField.style.display = 'block';
+                monthSelect.required = true;
+            } else {
+                monthField.style.display = 'none';
+                monthSelect.required = false;
+                monthSelect.value = '';
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('budgetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBudgetModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBudgetModal();
+            }
+        });
+    </script>
 </x-app-layout>

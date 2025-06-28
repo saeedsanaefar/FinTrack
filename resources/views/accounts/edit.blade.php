@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Edit Account: ') . $account->name }}
             </h2>
             <div class="flex space-x-2">
@@ -17,8 +17,8 @@
 
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg border border-gray-700">
+                <div class="p-6 text-gray-100">
                     <form method="POST" action="{{ route('accounts.update', $account) }}">
                         @csrf
                         @method('PUT')
@@ -33,7 +33,7 @@
                         <!-- Account Type -->
                         <div class="mb-4">
                             <x-input-label for="type" :value="__('Account Type')" />
-                            <select id="type" name="type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                            <select id="type" name="type" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                                 <option value="">Select Account Type</option>
                                 <option value="checking" {{ old('type', $account->type) == 'checking' ? 'selected' : '' }}>Checking</option>
                                 <option value="savings" {{ old('type', $account->type) == 'savings' ? 'selected' : '' }}>Savings</option>
@@ -63,14 +63,14 @@
                         <!-- Description -->
                         <div class="mb-4">
                             <x-input-label for="description" :value="__('Description (Optional)')" />
-                            <textarea id="description" name="description" rows="3" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Add a description for this account...">{{ old('description', $account->description) }}</textarea>
+                            <textarea id="description" name="description" rows="3" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Add a description for this account...">{{ old('description', $account->description) }}</textarea>
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
                         <!-- Account Status -->
                         <div class="mb-6">
                             <div class="flex items-center">
-                                <input id="is_active" name="is_active" type="checkbox" value="1" 
+                                <input id="is_active" name="is_active" type="checkbox" value="1"
                                        {{ old('is_active', $account->is_active) ? 'checked' : '' }}
                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                                 <label for="is_active" class="ml-2 block text-sm text-gray-900">
@@ -90,7 +90,7 @@
                             </x-primary-button>
                         </div>
                     </form>
-                    
+
                     <!-- Delete Account Section -->
                     @if($account->transactions->count() === 0)
                         <div class="mt-8 pt-6 border-t border-gray-200">
@@ -107,7 +107,7 @@
                                             <p>This account has no transactions and can be safely deleted. This action cannot be undone.</p>
                                         </div>
                                         <div class="mt-4">
-                                            <form action="{{ route('accounts.destroy', $account) }}" method="POST" class="inline" 
+                                            <form action="{{ route('accounts.destroy', $account) }}" method="POST" class="inline"
                                                   onsubmit="return confirm('Are you sure you want to delete this account? This action cannot be undone.')">
                                                 @csrf
                                                 @method('DELETE')

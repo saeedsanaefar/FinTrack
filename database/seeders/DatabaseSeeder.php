@@ -19,5 +19,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Create default categories for all users
+        $this->call(DefaultCategoriesSeeder::class);
     }
 }

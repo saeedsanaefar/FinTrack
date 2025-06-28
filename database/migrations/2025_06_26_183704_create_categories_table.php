@@ -23,11 +23,11 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             $table->index(['user_id', 'type']);
             $table->index(['is_active']);
             $table->unique(['user_id', 'slug']);
-        });}]}}}
+        });
     }
 
     /**

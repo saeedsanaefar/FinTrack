@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('My Accounts') }}
             </h2>
             <a href="{{ route('accounts.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -24,12 +24,12 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @if($accounts->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($accounts as $account)
-                                <div class="bg-white border border-gray-200 rounded-lg shadow-md p-6">
+                                <div class="bg-gray-300 border border-gray-200 rounded-lg shadow-md p-6">
                                     <div class="flex justify-between items-start mb-4">
                                         <h3 class="text-lg font-semibold text-gray-900">{{ $account->name }}</h3>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -42,16 +42,16 @@
                                             {{ $account->type_display }}
                                         </span>
                                     </div>
-                                    
+
                                     <div class="mb-4">
                                         <p class="text-2xl font-bold text-gray-900">{{ $account->formatted_balance }}</p>
                                         <p class="text-sm text-gray-500">{{ $account->currency }}</p>
                                     </div>
-                                    
+
                                     @if($account->description)
                                         <p class="text-sm text-gray-600 mb-4">{{ $account->description }}</p>
                                     @endif
-                                    
+
                                     <div class="flex justify-between items-center">
                                         <div class="flex space-x-2">
                                             <a href="{{ route('accounts.show', $account) }}" class="text-blue-600 hover:text-blue-900 text-sm font-medium">
@@ -61,8 +61,8 @@
                                                 Edit
                                             </a>
                                         </div>
-                                        
-                                        <form action="{{ route('accounts.destroy', $account) }}" method="POST" class="inline" 
+
+                                        <form action="{{ route('accounts.destroy', $account) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Are you sure you want to delete this account?')">
                                             @csrf
                                             @method('DELETE')

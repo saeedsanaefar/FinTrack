@@ -28,12 +28,12 @@ return new class extends Migration
             $table->string('recurring_frequency')->nullable(); // daily, weekly, monthly, yearly
             $table->date('recurring_end_date')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'date']);
             $table->index(['account_id', 'date']);
             $table->index(['category_id']);
             $table->index(['type']);
-        });}]}}}
+        });
     }
 
     /**

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ $account->name }}
             </h2>
             <div class="flex space-x-2">
@@ -25,25 +25,25 @@
                             <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Account Type</h3>
                             <p class="mt-2 text-lg font-semibold text-gray-900">{{ $account->type_display }}</p>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Current Balance</h3>
                             <p class="mt-2 text-2xl font-bold text-gray-900">{{ $account->formatted_balance }}</p>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Currency</h3>
                             <p class="mt-2 text-lg font-semibold text-gray-900">{{ $account->currency }}</p>
                         </div>
                     </div>
-                    
+
                     @if($account->description)
                         <div class="mt-6">
                             <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Description</h3>
                             <p class="mt-2 text-gray-900">{{ $account->description }}</p>
                         </div>
                     @endif
-                    
+
                     <div class="mt-6">
                         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Account Status</h3>
                         <span class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -63,7 +63,7 @@
                             View All Transactions
                         </a>
                     </div>
-                    
+
                     @if($account->transactions->count() > 0)
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">

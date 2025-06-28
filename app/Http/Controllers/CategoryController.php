@@ -2,25 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Http\Requests\CreateCategoryRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
+    // Authentication is handled via route middleware in web.php
+
     /**
-     * Display a listing of the categories.
+     * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        // TODO: Fetch categories with transaction counts
-        // $categories = Category::withCount('transactions')->get();
+        $query = Category::where('user_id', auth()->id())
+            ->withCount('transactions')
+            ->with(['transactions' => function ($query) {
+                $query->selectRaw('category_id, SUM(CASE WHEN type = "income" THEN amount ELSE -amount END) as total_amount')
+                    ->groupBy('category_id');
+            }]);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by type
+        if ($request->filled('type') && $request->get('type') !== 'all') {
+            $query->where('type', $request->get('type'));
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->get('status') === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->get('status') === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        // Sort
+        $sortBy = $request->get('sort', 'sort_order');
+        $sortDirection = $request->get('direction', 'asc');
         
-        return view('categories.index');
+        if ($sortBy === 'transactions_count') {
+            $query->orderBy('transactions_count', $sortDirection);
+        } elseif ($sortBy === 'name') {
+            $query->orderBy('name', $sortDirection);
+        } else {
+            $query->orderBy('sort_order', 'asc')->orderBy('name', 'asc');
+        }
+
+        $categories = $query->paginate(15)->withQueryString();
+
+        return view('categories.index', compact('categories'));
     }
 
     /**
-     * Show the form for creating a new category.
+     * Show the form for creating a new resource.
      */
     public function create(): View
     {
@@ -28,79 +74,102 @@ class CategoryController extends Controller
     }
 
     /**
-     * Store a newly created category in storage.
+     * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(CreateCategoryRequest $request): RedirectResponse
     {
-        // TODO: Validate and store category
-        // $request->validate([
-        //     'name' => 'required|string|max:255|unique:categories',
-        //     'type' => 'required|in:income,expense',
-        //     'color' => 'nullable|string|max:7', // Hex color code
-        //     'icon' => 'nullable|string|max:50',
-        // ]);
-        
-        return redirect()->route('categories.index')
-            ->with('success', 'Category created successfully.');
+        try {
+            $validated = $request->validated();
+            $validated['user_id'] = auth()->id();
+            
+            Category::create($validated);
+            
+            return redirect()->route('categories.index')
+                ->with('success', 'Category created successfully.');
+                
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Failed to create category: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Display the specified category.
+     * Display the specified resource.
      */
-    public function show(string $id): View
+    public function show(Category $category): View
     {
-        // TODO: Fetch category with recent transactions
-        // $category = Category::with(['transactions' => function($query) {
-        //     $query->orderBy('date', 'desc')->limit(10);
-        // }])->findOrFail($id);
+        $this->authorize('view', $category);
         
-        return view('categories.show');
+        $category->load(['transactions' => function ($query) {
+            $query->with('account')
+                ->orderBy('date', 'desc')
+                ->orderBy('created_at', 'desc');
+        }]);
+        
+        // Calculate category statistics
+        $stats = [
+            'total_transactions' => $category->transactions->count(),
+            'total_amount' => $category->transactions->sum(function ($transaction) {
+                return $transaction->type === 'income' ? $transaction->amount : -$transaction->amount;
+            }),
+            'income_total' => $category->transactions->where('type', 'income')->sum('amount'),
+            'expense_total' => $category->transactions->where('type', 'expense')->sum('amount'),
+        ];
+        
+        return view('categories.show', compact('category', 'stats'));
     }
 
     /**
      * Show the form for editing the specified category.
      */
-    public function edit(string $id): View
+    public function edit(Category $category): View
     {
-        // TODO: Fetch category for editing
-        // $category = Category::findOrFail($id);
+        $this->authorize('update', $category);
         
-        return view('categories.edit');
+        return view('categories.edit', compact('category'));
     }
 
     /**
      * Update the specified category in storage.
      */
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(CreateCategoryRequest $request, Category $category): RedirectResponse
     {
-        // TODO: Validate and update category
-        // $request->validate([
-        //     'name' => 'required|string|max:255|unique:categories,name,' . $id,
-        //     'type' => 'required|in:income,expense',
-        //     'color' => 'nullable|string|max:7',
-        //     'icon' => 'nullable|string|max:50',
-        // ]);
+        $this->authorize('update', $category);
         
-        return redirect()->route('categories.index')
-            ->with('success', 'Category updated successfully.');
+        try {
+            $validated = $request->validated();
+            $category->update($validated);
+            
+            return redirect()->route('categories.index')
+                ->with('success', 'Category updated successfully.');
+                
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Failed to update category: ' . $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified category from storage.
      */
-    public function destroy(string $id): RedirectResponse
+    public function destroy(Category $category): RedirectResponse
     {
-        // TODO: Check if category has transactions before deleting
-        // $category = Category::findOrFail($id);
-        // 
-        // if ($category->transactions()->count() > 0) {
-        //     return redirect()->route('categories.index')
-        //         ->with('error', 'Cannot delete category with existing transactions.');
-        // }
-        // 
-        // $category->delete();
+        $this->authorize('delete', $category);
         
-        return redirect()->route('categories.index')
-            ->with('success', 'Category deleted successfully.');
+        try {
+            // Check if category has transactions
+            if ($category->transactions()->count() > 0) {
+                return redirect()->route('categories.index')
+                    ->with('error', 'Cannot delete category with existing transactions. Please reassign or delete the transactions first.');
+            }
+            
+            $category->delete();
+            
+            return redirect()->route('categories.index')
+                ->with('success', 'Category deleted successfully.');
+                
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete category: ' . $e->getMessage());
+        }
     }
 }

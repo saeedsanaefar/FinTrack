@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Models\Category;
+use App\Models\Budget;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
@@ -92,6 +93,16 @@ class DashboardController extends Controller
             $savingsRate = (($monthlyIncome - $monthlyExpenses) / $monthlyIncome) * 100;
         }
 
+        // Get budget data
+        $budgetAlerts = Budget::getBudgetAlerts($user->id, 80);
+        $currentMonthBudgets = Budget::getCurrentMonthBudgets($user->id);
+        $activeBudgetsCount = Budget::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->count();
+
+        // Update spent amounts for current budgets
+        Budget::updateAllSpentAmounts($user->id);
+
         return view('dashboard', compact(
             'totalBalance',
             'monthlyIncome',
@@ -102,7 +113,10 @@ class DashboardController extends Controller
             'recentTransactions',
             'accountBreakdown',
             'savingsRate',
-            'accounts'
+            'accounts',
+            'budgetAlerts',
+            'currentMonthBudgets',
+            'activeBudgetsCount'
         ));
     }
 }

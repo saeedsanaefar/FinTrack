@@ -8,7 +8,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    <h2 class="font-semibold text-xl text-white leading-tight">
                         {{ __('Create New Account') }}
                     </h2>
                     <p class="text-sm text-gray-600">Set up a new financial account to track your money</p>

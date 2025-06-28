@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Transactions') }}
             </h2>
             <a href="{{ route('transactions.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -13,13 +13,13 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Filters -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+            <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
                 <div class="p-6">
                     <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Account Filter -->
                         <div>
                             <label for="account_id" class="block text-sm font-medium text-gray-700 mb-1">Account</label>
-                            <select name="account_id" id="account_id" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select name="account_id" id="account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">All Accounts</option>
                                 @foreach(auth()->user()->accounts as $account)
                                     <option value="{{ $account->id }}" {{ request('account_id') == $account->id ? 'selected' : '' }}>
@@ -32,7 +32,7 @@
                         <!-- Category Filter -->
                         <div>
                             <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select name="category_id" id="category_id" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select name="category_id" id="category_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">All Categories</option>
                                 @foreach(auth()->user()->categories as $category)
                                     <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
@@ -45,7 +45,7 @@
                         <!-- Type Filter -->
                         <div>
                             <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                            <select name="type" id="type" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select name="type" id="type" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">All Types</option>
                                 <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>Income</option>
                                 <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>Expense</option>
@@ -55,10 +55,10 @@
 
                         <!-- Submit Button -->
                         <div class="flex items-end">
-                            <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
+                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mr-2">
                                 Filter
                             </button>
-                            <a href="{{ route('transactions.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                            <a href="{{ route('transactions.index') }}" class="px-4 py-2 bg-gray-800 border border-gray-500 rounded-md text-gray-100 hover:bg-gray-500 transition-colors">
                                 Clear
                             </a>
                         </div>
@@ -67,7 +67,7 @@
             </div>
 
             <!-- Transactions List -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6 mb-6 overflow-hidden sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @if($transactions->count() > 0)
                         <div class="overflow-x-auto">
@@ -97,7 +97,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 @if($transaction->category)
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                                           style="background-color: {{ $transaction->category->color }}20; color: {{ $transaction->category->color }}">
                                                         {{ $transaction->category->name }}
                                                     </span>
@@ -107,13 +107,13 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                    {{ $transaction->type === 'income' ? 'bg-green-100 text-green-800' : 
+                                                    {{ $transaction->type === 'income' ? 'bg-green-100 text-green-800' :
                                                        ($transaction->type === 'expense' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
                                                     {{ ucfirst($transaction->type) }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium
-                                                {{ $transaction->type === 'income' ? 'text-green-600' : 
+                                                {{ $transaction->type === 'income' ? 'text-green-600' :
                                                    ($transaction->type === 'expense' ? 'text-red-600' : 'text-blue-600') }}">
                                                 {{ $transaction->type === 'income' ? '+' : ($transaction->type === 'expense' ? '-' : '') }}
                                                 {{ number_format($transaction->amount, 2) }} {{ $transaction->account->currency }}
@@ -122,7 +122,7 @@
                                                 <div class="flex space-x-2">
                                                     <a href="{{ route('transactions.show', $transaction) }}" class="text-blue-600 hover:text-blue-900">View</a>
                                                     <a href="{{ route('transactions.edit', $transaction) }}" class="text-green-600 hover:text-green-900">Edit</a>
-                                                    <form action="{{ route('transactions.destroy', $transaction) }}" method="POST" class="inline" 
+                                                    <form action="{{ route('transactions.destroy', $transaction) }}" method="POST" class="inline"
                                                           onsubmit="return confirm('Are you sure you want to delete this transaction?')">
                                                         @csrf
                                                         @method('DELETE')

@@ -207,6 +207,135 @@
                 </div>
             </div>
 
+            <!-- Budget Alerts & Progress -->
+            @if($activeBudgetsCount > 0)
+                <div class="mb-8">
+                    <!-- Budget Alerts -->
+                    @if($budgetAlerts->count() > 0)
+                        <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-2xl p-6 mb-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-orange-100 dark:bg-orange-800 rounded-xl flex items-center justify-center mr-3">
+                                        <i class="fas fa-exclamation-triangle text-orange-600 dark:text-orange-400"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-orange-900 dark:text-orange-100">
+                                            {{ $budgetAlerts->count() }} Budget Alert{{ $budgetAlerts->count() > 1 ? 's' : '' }}
+                                        </h3>
+                                        <p class="text-sm text-orange-700 dark:text-orange-300">
+                                            Some budgets need your attention
+                                        </p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('budgets.alerts') }}" 
+                                   class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-sm font-medium transition-colors">
+                                    View All Alerts
+                                </a>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach($budgetAlerts->take(2) as $budget)
+                                    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-orange-200 dark:border-orange-700">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <h4 class="font-semibold text-gray-900 dark:text-gray-100">{{ $budget->category->name }}</h4>
+                                            @php
+                                                $alertColors = [
+                                                    'warning' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-200',
+                                                    'over' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200'
+                                                ];
+                                            @endphp
+                                            <span class="px-2 py-1 {{ $alertColors[$budget->status] ?? 'bg-gray-100 text-gray-800' }} text-xs rounded-full">
+                                                @if($budget->status === 'over')
+                                                    Over Budget
+                                                @else
+                                                    {{ $budget->progress_percentage }}% Used
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                <span>${{ number_format($budget->spent_amount, 2) }}</span>
+                                                <span>${{ number_format($budget->amount, 2) }}</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                @php
+                                                    $progressColors = [
+                                                        'warning' => 'bg-orange-500',
+                                                        'over' => 'bg-red-500'
+                                                    ];
+                                                @endphp
+                                                <div class="{{ $progressColors[$budget->status] ?? 'bg-gray-500' }} h-2 rounded-full transition-all duration-300" 
+                                                     style="width: {{ min(100, $budget->progress_percentage) }}%"></div>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $budget->period_label }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Current Month Budget Progress -->
+                    @if($currentMonthBudgets->count() > 0)
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">This Month's Budgets</h3>
+                                <a href="{{ route('budgets.index') }}" 
+                                   class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
+                                    Manage Budgets
+                                </a>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($currentMonthBudgets->take(6) as $budget)
+                                    <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <h4 class="font-medium text-gray-900 dark:text-gray-100">{{ $budget->category->name }}</h4>
+                                            @php
+                                                $statusColors = [
+                                                    'good' => 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200',
+                                                    'caution' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200',
+                                                    'warning' => 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-200',
+                                                    'over' => 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200'
+                                                ];
+                                            @endphp
+                                            <span class="px-2 py-1 {{ $statusColors[$budget->status] ?? 'bg-gray-100 text-gray-800' }} text-xs rounded-full">
+                                                {{ $budget->progress_percentage }}%
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                <span>${{ number_format($budget->spent_amount, 2) }}</span>
+                                                <span>${{ number_format($budget->amount, 2) }}</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                @php
+                                                    $progressColors = [
+                                                        'good' => 'bg-green-500',
+                                                        'caution' => 'bg-yellow-500',
+                                                        'warning' => 'bg-orange-500',
+                                                        'over' => 'bg-red-500'
+                                                    ];
+                                                @endphp
+                                                <div class="{{ $progressColors[$budget->status] ?? 'bg-gray-500' }} h-2 rounded-full transition-all duration-300" 
+                                                     style="width: {{ min(100, $budget->progress_percentage) }}%"></div>
+                                            </div>
+                                        </div>
+                                        @if($budget->remaining_amount > 0)
+                                            <p class="text-xs text-green-600 dark:text-green-400">
+                                                ${{ number_format($budget->remaining_amount, 2) }} remaining
+                                            </p>
+                                        @else
+                                            <p class="text-xs text-red-600 dark:text-red-400">
+                                                ${{ number_format($budget->over_budget_amount, 2) }} over
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             <!-- Recent Transactions & Quick Actions -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Recent Transactions -->
@@ -374,6 +503,20 @@
                                         <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">View
                                             Transactions</p>
                                         <p class="text-sm text-gray-600 dark:text-gray-400">Browse all transactions</p>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('budgets.index') }}"
+                                class="block w-full text-left p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border border-indigo-200 dark:border-indigo-700 hover:from-indigo-100 hover:to-indigo-200 dark:hover:from-indigo-800/30 dark:hover:to-indigo-700/30 transition-all duration-200 transform hover:scale-105 group">
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:shadow-xl transition-shadow">
+                                        <i class="fas fa-chart-pie text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Manage Budgets</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Track spending limits</p>
                                     </div>
                                 </div>
                             </a>

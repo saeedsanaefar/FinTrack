@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Edit Account: ') . $account->name }}
             </h2>
             <div class="flex space-x-2">
@@ -70,7 +70,7 @@
                         <!-- Account Status -->
                         <div class="mb-6">
                             <div class="flex items-center">
-                                <input id="is_active" name="is_active" type="checkbox" value="1" 
+                                <input id="is_active" name="is_active" type="checkbox" value="1"
                                        {{ old('is_active', $account->is_active) ? 'checked' : '' }}
                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                                 <label for="is_active" class="ml-2 block text-sm text-gray-900">
@@ -90,7 +90,7 @@
                             </x-primary-button>
                         </div>
                     </form>
-                    
+
                     <!-- Delete Account Section -->
                     @if($account->transactions->count() === 0)
                         <div class="mt-8 pt-6 border-t border-gray-200">
@@ -107,7 +107,7 @@
                                             <p>This account has no transactions and can be safely deleted. This action cannot be undone.</p>
                                         </div>
                                         <div class="mt-4">
-                                            <form action="{{ route('accounts.destroy', $account) }}" method="POST" class="inline" 
+                                            <form action="{{ route('accounts.destroy', $account) }}" method="POST" class="inline"
                                                   onsubmit="return confirm('Are you sure you want to delete this account? This action cannot be undone.')">
                                                 @csrf
                                                 @method('DELETE')

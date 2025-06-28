@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Transaction Details') }}
             </h2>
             <div class="flex space-x-2">
@@ -24,12 +24,12 @@
                         <!-- Left Column -->
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction Information</h3>
-                            
+
                             <!-- Type -->
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                    {{ $transaction->type === 'income' ? 'bg-green-100 text-green-800' : 
+                                    {{ $transaction->type === 'income' ? 'bg-green-100 text-green-800' :
                                        ($transaction->type === 'expense' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
                                     {{ ucfirst($transaction->type) }}
                                 </span>
@@ -39,7 +39,7 @@
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
                                 <div class="text-2xl font-bold
-                                    {{ $transaction->type === 'income' ? 'text-green-600' : 
+                                    {{ $transaction->type === 'income' ? 'text-green-600' :
                                        ($transaction->type === 'expense' ? 'text-red-600' : 'text-blue-600') }}">
                                     {{ $transaction->type === 'income' ? '+' : ($transaction->type === 'expense' ? '-' : '') }}
                                     {{ number_format($transaction->amount, 2) }} {{ $transaction->account->currency }}
@@ -70,7 +70,7 @@
                         <!-- Right Column -->
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Account & Category</h3>
-                            
+
                             <!-- Account -->
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ $transaction->type === 'transfer' ? 'From Account' : 'Account' }}</label>
@@ -108,7 +108,7 @@
                                 <div class="mb-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
                                     <div class="flex items-center">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium" 
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
                                               style="background-color: {{ $transaction->category->color }}20; color: {{ $transaction->category->color }}">
                                             @if($transaction->category->icon)
                                                 <span class="mr-1">{{ $transaction->category->icon }}</span>
@@ -180,24 +180,24 @@
                         <a href="{{ route('transactions.edit', $transaction) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Edit Transaction
                         </a>
-                        
+
                         @if($transaction->type !== 'transfer')
                             <a href="{{ route('transactions.create') }}?duplicate={{ $transaction->id }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                                 Duplicate Transaction
                             </a>
                         @endif
-                        
+
                         <a href="{{ route('accounts.show', $transaction->account) }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                             View Account
                         </a>
-                        
+
                         @if($transaction->category)
                             <a href="{{ route('categories.show', $transaction->category) }}" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
                                 View Category
                             </a>
                         @endif
                     </div>
-                    
+
                     <!-- Delete Section -->
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <div class="bg-red-50 border border-red-200 rounded-md p-4">
@@ -213,7 +213,7 @@
                                         <p>This action cannot be undone. The account balance will be automatically updated.</p>
                                     </div>
                                     <div class="mt-4">
-                                        <form action="{{ route('transactions.destroy', $transaction) }}" method="POST" class="inline" 
+                                        <form action="{{ route('transactions.destroy', $transaction) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Are you sure you want to delete this transaction? This action cannot be undone and will update your account balance.')">
                                             @csrf
                                             @method('DELETE')

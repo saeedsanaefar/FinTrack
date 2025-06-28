@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 <i class="{{ $category->icon }} mr-2" style="color: {{ $category->color }}"></i>
                 {{ $category->name }}
                 <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $category->type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

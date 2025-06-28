@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Edit Transaction') }}
             </h2>
             <div class="flex space-x-2">
@@ -41,8 +41,8 @@
                             <select id="account_id" name="account_id" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required onchange="updateAccountBalance()">
                                 <option value="">Select Account</option>
                                 @foreach(auth()->user()->accounts as $account)
-                                    <option value="{{ $account->id }}" 
-                                            data-balance="{{ $account->balance }}" 
+                                    <option value="{{ $account->id }}"
+                                            data-balance="{{ $account->balance }}"
                                             data-currency="{{ $account->currency }}"
                                             {{ old('account_id', $transaction->account_id) == $account->id ? 'selected' : '' }}>
                                         {{ $account->name }} ({{ number_format($account->balance, 2) }} {{ $account->currency }})
@@ -75,7 +75,7 @@
                             <select id="category_id" name="category_id" class="block mt-1 w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Select Category</option>
                                 @foreach(auth()->user()->categories as $category)
-                                    <option value="{{ $category->id }}" 
+                                    <option value="{{ $category->id }}"
                                             data-type="{{ $category->type }}"
                                             {{ old('category_id', $transaction->category_id) == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
@@ -126,7 +126,7 @@
                         <!-- Recurring Transaction -->
                         <div class="mb-4">
                             <div class="flex items-center">
-                                <input id="is_recurring" name="is_recurring" type="checkbox" value="1" 
+                                <input id="is_recurring" name="is_recurring" type="checkbox" value="1"
                                        {{ old('is_recurring', $transaction->is_recurring) ? 'checked' : '' }}
                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                        onchange="toggleRecurringOptions()">
@@ -177,7 +177,7 @@
             const categorySelect = document.getElementById('category_id');
             const categorySection = document.getElementById('category-section');
             const toAccountSection = document.getElementById('to-account-section');
-            
+
             // Show/hide sections based on type
             if (type === 'transfer') {
                 categorySection.style.display = 'none';
@@ -190,7 +190,7 @@
                 document.getElementById('to_account_id').required = false;
                 categorySelect.required = true;
             }
-            
+
             // Filter categories by type
             const options = categorySelect.querySelectorAll('option');
             options.forEach(option => {
@@ -198,7 +198,7 @@
                     option.style.display = 'block';
                     return;
                 }
-                
+
                 const optionType = option.getAttribute('data-type');
                 if (type === '' || optionType === type) {
                     option.style.display = 'block';
@@ -207,19 +207,19 @@
                 }
             });
         }
-        
+
         function updateAccountBalance() {
             const accountSelect = document.getElementById('account_id');
             const balanceDiv = document.getElementById('account-balance');
             const balanceAmount = document.getElementById('balance-amount');
             const currencySymbol = document.getElementById('currency-symbol');
-            
+
             const selectedOption = accountSelect.options[accountSelect.selectedIndex];
-            
+
             if (selectedOption.value) {
                 const balance = selectedOption.getAttribute('data-balance');
                 const currency = selectedOption.getAttribute('data-currency');
-                
+
                 balanceAmount.textContent = `${parseFloat(balance).toLocaleString()} ${currency}`;
                 currencySymbol.textContent = currency === 'USD' ? '$' : currency;
                 balanceDiv.style.display = 'block';
@@ -227,18 +227,18 @@
                 balanceDiv.style.display = 'none';
             }
         }
-        
+
         function toggleRecurringOptions() {
             const checkbox = document.getElementById('is_recurring');
             const options = document.getElementById('recurring-options');
-            
+
             if (checkbox.checked) {
                 options.style.display = 'block';
             } else {
                 options.style.display = 'none';
             }
         }
-        
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateCategoryOptions();

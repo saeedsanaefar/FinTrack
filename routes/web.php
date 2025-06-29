@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\RecurringTransactionController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -42,6 +43,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('recurring-transactions', RecurringTransactionController::class);
     Route::patch('/recurring-transactions/{recurringTransaction}/toggle', [RecurringTransactionController::class, 'toggle'])->name('recurring-transactions.toggle');
     Route::post('/recurring-transactions/{recurringTransaction}/generate', [RecurringTransactionController::class, 'generate'])->name('recurring-transactions.generate');
+    
+    // Report routes
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export-csv', [ReportController::class, 'exportCsv'])->name('reports.export-csv');
+    Route::get('/reports/chart-data', [ReportController::class, 'getChartData'])->name('reports.chart-data');
 });
 
 require __DIR__.'/auth.php';

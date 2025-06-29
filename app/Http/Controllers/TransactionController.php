@@ -37,12 +37,24 @@ class TransactionController extends Controller
             $query->where('type', $request->type);
         }
         
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
+        // Date filters - support both old and new parameter names
+        if ($request->filled('date_from') || $request->filled('start_date')) {
+            $startDate = $request->date_from ?: $request->start_date;
+            $query->whereDate('date', '>=', $startDate);
         }
         
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
+        if ($request->filled('date_to') || $request->filled('end_date')) {
+            $endDate = $request->date_to ?: $request->end_date;
+            $query->whereDate('date', '<=', $endDate);
+        }
+        
+        // Amount filters
+        if ($request->filled('min_amount')) {
+            $query->where('amount', '>=', $request->min_amount);
+        }
+        
+        if ($request->filled('max_amount')) {
+            $query->where('amount', '<=', $request->max_amount);
         }
         
         if ($request->filled('search')) {

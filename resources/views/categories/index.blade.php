@@ -126,10 +126,10 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <form id="categoryForm" method="POST" action="{{ route('categories.store') }}" class="space-y-4">
                     @csrf
-                    
+
                     <!-- Name -->
                     <div>
                         <label for="modal_name" class="block text-sm font-medium text-gray-300 mb-1">
@@ -139,7 +139,7 @@
                                placeholder="Enter category name"
                                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                     </div>
-                    
+
                     <!-- Type -->
                     <div>
                         <label for="modal_type" class="block text-sm font-medium text-gray-300 mb-1">
@@ -152,19 +152,19 @@
                             <option value="expense">💸 Expense</option>
                         </select>
                     </div>
-                    
+
                     <!-- Icon Selector -->
                     <div>
                         <x-icon-selector name="icon" :selected="'tag'" />
                         <p class="text-xs text-gray-400 mt-1">Choose an icon to represent this category</p>
                     </div>
-                    
+
                     <!-- Color Picker -->
                     <div>
                         <x-color-picker name="color" :selected="'#3B82F6'" />
                         <p class="text-xs text-gray-400 mt-1">Pick a color to easily identify this category</p>
                     </div>
-                    
+
                     <!-- Description -->
                     <div>
                         <label for="modal_description" class="block text-sm font-medium text-gray-300 mb-1">
@@ -174,7 +174,7 @@
                                   placeholder="Add a description for this category..."
                                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
                     </div>
-                    
+
                     <!-- Sort Order -->
                     <div>
                         <label for="modal_sort_order" class="block text-sm font-medium text-gray-300 mb-1">
@@ -185,7 +185,7 @@
                                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         <p class="text-xs text-gray-400 mt-1">Lower numbers appear first in lists</p>
                     </div>
-                    
+
                     <!-- Active Status -->
                     <div class="flex items-center">
                         <input type="checkbox" name="is_active" id="modal_is_active" value="1" checked
@@ -194,7 +194,7 @@
                             ✅ Active Category
                         </label>
                     </div>
-                    
+
                     <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" onclick="closeCategoryModal()"
                                 class="px-4 py-2 bg-gray-600 text-gray-100 rounded-md hover:bg-gray-700 transition-colors">
@@ -215,19 +215,19 @@
             document.getElementById('categoryModal').classList.remove('hidden');
             document.getElementById('modal_name').focus();
         }
-        
+
         function closeCategoryModal() {
             document.getElementById('categoryModal').classList.add('hidden');
             document.getElementById('categoryForm').reset();
         }
-        
+
         // Close modal when clicking outside
         document.getElementById('categoryModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeCategoryModal();
             }
         });
-        
+
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -235,7 +235,7 @@
             }
         });
     </script>
-    
+
     @push('scripts')
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

@@ -79,36 +79,44 @@ class ReportController extends Controller
         ));
     }
 
+    public function totalIncome()
+    {
+        $totalIncome = DB::table('transactions')
+            ->where('user_id', auth()->id())
+            ->where('type', 'income')
+            ->sum('amount');
+
+        return response()->json(['total' => $totalIncome]);
+    }
+
     public function exportCsv(Request $request)
     {
-        $startDate = $request->start_date ? Carbon::parse($request->start_date) : now()->startOfMonth();
-        $endDate = $request->end_date ? Carbon::parse($request->end_date) : now()->endOfMonth();
+        $query = auth()->user()->transactions()
+            ->with(['account', 'category']);
 
-        $transactions = auth()->user()->transactions()
-            ->with(['account', 'category'])
-            ->whereBetween('date', [$startDate, $endDate])
-            ->orderBy('date', 'desc')
-            ->get();
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        }
+
+        $transactions = $query->get();
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="transactions-' . $startDate->format('Y-m-d') . '-to-' . $endDate->format('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="transactions.csv"',
         ];
 
         $callback = function() use ($transactions) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Date', 'Description', 'Category', 'Account', 'Type', 'Amount', 'Reference', 'Notes']);
+            fputcsv($file, ['Date', 'Description', 'Category', 'Account', 'Type', 'Amount']);
 
             foreach ($transactions as $transaction) {
                 fputcsv($file, [
-                    $transaction->date->format('Y-m-d'),
+                    $transaction->date,
                     $transaction->description,
-                    $transaction->category->name ?? 'N/A',
-                    $transaction->account->name ?? 'N/A',
-                    ucfirst($transaction->type),
-                    number_format($transaction->amount, 2),
-                    $transaction->reference ?? '',
-                    $transaction->notes ?? '',
+                    $transaction->category->name,
+                    $transaction->account->name,
+                    $transaction->type,
+                    $transaction->amount,
                 ]);
             }
             fclose($file);

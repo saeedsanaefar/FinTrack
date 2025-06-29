@@ -9,6 +9,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -46,8 +47,19 @@ Route::middleware('auth')->group(function () {
     
     // Report routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/monthly-data', [ReportController::class, 'monthlyData'])->name('reports.monthly-data');
+    Route::get('/reports/category-data', [ReportController::class, 'categoryData'])->name('reports.category-data');
+    Route::get('/reports/account-data', [ReportController::class, 'accountData'])->name('reports.account-data');
+    Route::get('/reports/total-income', [ReportController::class, 'totalIncome'])->name('reports.total-income');
     Route::get('/reports/export-csv', [ReportController::class, 'exportCsv'])->name('reports.export-csv');
     Route::get('/reports/chart-data', [ReportController::class, 'getChartData'])->name('reports.chart-data');
+
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'show'])->name('settings.index');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update-profile');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update-password');
+    Route::get('/settings/export-data', [SettingsController::class, 'exportData'])->name('settings.export-data');
+    Route::delete('/settings/delete-account', [SettingsController::class, 'deleteAccount'])->name('settings.delete-account');
 });
 
 require __DIR__.'/auth.php';

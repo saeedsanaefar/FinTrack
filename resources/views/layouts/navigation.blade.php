@@ -19,7 +19,7 @@
                         </svg>
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    
+
                     <!-- Accounts -->
                     <x-nav-link :href="route('accounts.index')" :active="request()->routeIs('accounts.*')">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@
                         </svg>
                         {{ __('Accounts') }}
                     </x-nav-link>
-                    
+
                     <!-- Transactions -->
                     <x-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.*')">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,7 +35,7 @@
                         </svg>
                         {{ __('Transactions') }}
                     </x-nav-link>
-                    
+
                     <!-- Categories -->
                     <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +43,7 @@
                         </svg>
                         {{ __('Categories') }}
                     </x-nav-link>
-                    
+
                     <!-- Budget -->
                     <x-nav-link :href="route('budgets.index')" :active="request()->routeIs('budgets.*')">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@
                         </svg>
                         {{ __('Budgets') }}
                     </x-nav-link>
-                    
+
                     <!-- Recurring Transactions -->
                     <x-nav-link :href="route('recurring-transactions.index')" :active="request()->routeIs('recurring-transactions.*')">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +59,7 @@
                         </svg>
                         {{ __('Recurring Transactions') }}
                     </x-nav-link>
-                    
+
                     <!-- Reports -->
                     <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,6 @@
                         </svg>
                         {{ __('Reports') }}
                     </x-nav-link>
-                </div>
             </div>
 
             <!-- Settings Dropdown -->
@@ -88,6 +87,10 @@
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
+                        </x-dropdown-link>
+
+                        <x-dropdown-link :href="route('settings.index')">
+                            {{ __('Settings') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -122,29 +125,33 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            
+
             <x-responsive-nav-link :href="route('accounts.index')" :active="request()->routeIs('accounts.*')">
                 {{ __('Accounts') }}
             </x-responsive-nav-link>
-            
+
             <x-responsive-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.*')">
                 {{ __('Transactions') }}
             </x-responsive-nav-link>
-            
+
             <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                 {{ __('Categories') }}
             </x-responsive-nav-link>
-            
+
             <x-responsive-nav-link :href="route('budgets.index')" :active="request()->routeIs('budgets.*')">
                 {{ __('Budgets') }}
             </x-responsive-nav-link>
-            
+
             <x-responsive-nav-link :href="route('recurring-transactions.index')" :active="request()->routeIs('recurring-transactions.*')">
                 {{ __('Recurring Transactions') }}
             </x-responsive-nav-link>
-            
+
             <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                 {{ __('Reports') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')">
+                {{ __('Settings') }}
             </x-responsive-nav-link>
         </div>
 

@@ -172,4 +172,40 @@ class CategoryController extends Controller
             return back()->with('error', 'Failed to delete category: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Deactivate the specified category.
+     */
+    public function deactivate(Category $category): RedirectResponse
+    {
+        $this->authorize('update', $category);
+        
+        try {
+            $category->update(['is_active' => false]);
+            
+            return redirect()->route('categories.index')
+                ->with('success', 'Category deactivated successfully.');
+                
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to deactivate category: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Activate the specified category.
+     */
+    public function activate(Category $category): RedirectResponse
+    {
+        $this->authorize('update', $category);
+        
+        try {
+            $category->update(['is_active' => true]);
+            
+            return redirect()->route('categories.index')
+                ->with('success', 'Category activated successfully.');
+                
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to activate category: ' . $e->getMessage());
+        }
+    }
 }

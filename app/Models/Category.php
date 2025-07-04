@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Support\Str;
 
 class Category extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'name',
@@ -33,13 +35,31 @@ class Category extends Model
 
         static::creating(function ($category) {
             if (empty($category->slug)) {
-                $category->slug = Str::slug($category->name);
+                $baseSlug = Str::slug($category->name);
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                while (static::where('slug', $slug)->where('user_id', $category->user_id)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+                
+                $category->slug = $slug;
             }
         });
 
         static::updating(function ($category) {
-            if ($category->isDirty('name') && empty($category->slug)) {
-                $category->slug = Str::slug($category->name);
+            if ($category->isDirty('name')) {
+                $baseSlug = Str::slug($category->name);
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                while (static::where('slug', $slug)->where('user_id', $category->user_id)->where('id', '!=', $category->id)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+                
+                $category->slug = $slug;
             }
         });
     }

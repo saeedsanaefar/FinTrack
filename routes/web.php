@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('accounts', AccountController::class);
     Route::resource('transactions', TransactionController::class);
     Route::resource('categories', CategoryController::class);
+    Route::patch('/categories/{category}/activate', [CategoryController::class, 'activate'])->name('categories.activate');
+    Route::patch('/categories/{category}/deactivate', [CategoryController::class, 'deactivate'])->name('categories.deactivate');
     Route::resource('budgets', BudgetController::class);
 
     // Budget specific routes

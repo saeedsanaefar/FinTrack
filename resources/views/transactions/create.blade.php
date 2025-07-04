@@ -65,16 +65,16 @@
 
                         <!-- To Account (for transfers) -->
                         <div class="space-y-2" id="to-account-section" style="display: none;">
-                            <x-input-label for="to_account_id" :value="__('To Account')" :required="true" />
-                            <select id="to_account_id" name="to_account_id" class="block w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm transition-all duration-200 hover:border-gray-500">
+                            <x-input-label for="transfer_account_id" :value="__('To Account')" :required="true" />
+                            <select id="transfer_account_id" name="transfer_account_id" class="block w-full bg-gray-800 border-gray-600 text-gray-100 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm transition-all duration-200 hover:border-gray-500">
                                 <option value="" class="text-gray-500">Select destination account...</option>
                                 @foreach(auth()->user()->accounts as $account)
-                                    <option value="{{ $account->id }}" {{ old('to_account_id') == $account->id ? 'selected' : '' }}>
+                                    <option value="{{ $account->id }}" {{ old('transfer_account_id') == $account->id ? 'selected' : '' }}>
                                         {{ $account->name }} ({{ number_format($account->balance, 2) }} {{ $account->currency }})
                                     </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('to_account_id')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('transfer_account_id')" class="mt-2" />
                         </div>
 
                         <!-- Category -->
@@ -211,12 +211,12 @@
             if (type === 'transfer') {
                 categorySection.style.display = 'none';
                 toAccountSection.style.display = 'block';
-                document.getElementById('to_account_id').required = true;
+                document.getElementById('transfer_account_id').required = true;
                 categorySelect.required = false;
             } else {
                 categorySection.style.display = 'block';
                 toAccountSection.style.display = 'none';
-                document.getElementById('to_account_id').required = false;
+                document.getElementById('transfer_account_id').required = false;
                 categorySelect.required = true;
             }
 

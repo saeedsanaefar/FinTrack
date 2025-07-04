@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'account_id',
@@ -19,7 +21,7 @@ class Transaction extends Model
         'date',
         'reference',
         'notes',
-        'to_account_id',
+        'transfer_account_id',
         'transfer_transaction_id',
         'is_recurring',
         'recurring_frequency',
@@ -32,6 +34,22 @@ class Transaction extends Model
         'recurring_end_date' => 'date',
         'is_recurring' => 'boolean',
     ];
+
+    /**
+     * Retrieve the model for a bound value.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $query = $this->where($field ?? $this->getRouteKeyName(), $value);
+        
+        // Scope by user_id if user is authenticated (including test scenarios)
+        $user = auth()->user();
+        if ($user) {
+            $query->where('user_id', $user->id);
+        }
+        
+        return $query->first();
+    }
 
     // Relationships
     public function user(): BelongsTo
@@ -51,7 +69,12 @@ class Transaction extends Model
 
     public function toAccount(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'to_account_id');
+        return $this->belongsTo(Account::class, 'transfer_account_id');
+    }
+
+    public function transferAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'transfer_account_id');
     }
 
     public function transferTransaction(): HasOne
@@ -121,21 +144,21 @@ class Transaction extends Model
         return $this->type === 'transfer';
     }
 
-    // Model Events for Balance Updates
-    protected static function booted()
-    {
-        static::created(function ($transaction) {
-            $transaction->updateAccountBalance();
-        });
+    // Model Events for Balance Updates - Disabled to handle manually in controller
+    // protected static function booted()
+    // {
+    //     static::created(function ($transaction) {
+    //         $transaction->updateAccountBalance();
+    //     });
 
-        static::updated(function ($transaction) {
-            $transaction->updateAccountBalance();
-        });
+    //     static::updated(function ($transaction) {
+    //         $transaction->updateAccountBalance();
+    //     });
 
-        static::deleted(function ($transaction) {
-            $transaction->reverseAccountBalance();
-        });
-    }
+    //     static::deleted(function ($transaction) {
+    //         $transaction->reverseAccountBalance();
+    //     });
+    // }
 
     /**
      * Update account balance based on transaction
@@ -151,16 +174,18 @@ class Transaction extends Model
             ->where('type', 'expense')->sum('amount');
             
         // Handle transfers
-        $transfersIn = $account->transactions()
+        // Transfers OUT: when this account creates a transfer (money going out)
+        $transfersOut = $account->transactions()
             ->where('type', 'transfer')
             ->whereNotNull('transfer_account_id')
             ->sum('amount');
             
-        $transfersOut = Transaction::where('transfer_account_id', $account->id)
+        // Transfers IN: when this account receives a transfer (money coming in)
+        $transfersIn = Transaction::where('transfer_account_id', $account->id)
             ->where('type', 'transfer')
             ->sum('amount');
             
-        $balance = $balance + $transfersIn - $transfersOut;
+        $balance = $balance - $transfersOut + $transfersIn;
         
         $account->update(['balance' => $balance]);
     }

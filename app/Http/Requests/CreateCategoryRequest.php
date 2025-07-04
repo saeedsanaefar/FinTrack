@@ -34,7 +34,7 @@ class CreateCategoryRequest extends FormRequest
                 })->ignore($categoryId)
             ],
             'type' => 'required|in:income,expense,both',
-            'color' => 'nullable|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'color' => 'nullable|string|regex:/^#[A-Fa-f0-9]{6}$/',
             'icon' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',

@@ -37,7 +37,7 @@ class CreateTransactionRequest extends FormRequest
                     return $query->where('user_id', auth()->id());
                 })
             ],
-            'description' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0.01|max:999999999.99',
             'type' => 'required|in:income,expense,transfer',
             'date' => 'required|date|before_or_equal:today',

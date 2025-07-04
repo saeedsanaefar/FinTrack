@@ -251,6 +251,18 @@
                 <form method="POST" action="{{ route('transactions.store') }}" id="transactionModalForm" class="space-y-4">
                     @csrf
 
+                    <!-- Display Validation Errors -->
+                    @if ($errors->any())
+                        <div class="bg-red-900 bg-opacity-50 border border-red-600 rounded-lg p-3 mb-4">
+                            <h4 class="text-sm font-semibold text-red-300 mb-2">Please fix the following errors:</h4>
+                            <ul class="text-sm text-red-200 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>• {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <!-- Transaction Type -->
                     <div>
                         <label for="modal_type" class="block text-sm font-medium text-gray-300 mb-1">Transaction Type</label>
@@ -260,6 +272,9 @@
                             <option value="expense">💸 Expense</option>
                             <option value="transfer">🔄 Transfer</option>
                         </select>
+                        @error('type')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Account -->
@@ -273,12 +288,15 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('account_id')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- To Account (for transfers) -->
                     <div id="modal-to-account-section" style="display: none;">
-                        <label for="modal_to_account_id" class="block text-sm font-medium text-gray-300 mb-1">To Account</label>
-                        <select id="modal_to_account_id" name="to_account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <label for="modal_transfer_account_id" class="block text-sm font-medium text-gray-300 mb-1">To Account</label>
+                        <select id="modal_transfer_account_id" name="transfer_account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Select destination account...</option>
                             @foreach(auth()->user()->accounts as $account)
                                 <option value="{{ $account->id }}">
@@ -286,6 +304,9 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('transfer_account_id')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Category -->
@@ -299,6 +320,9 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('category_id')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Amount -->
@@ -308,12 +332,18 @@
                             <span class="absolute left-3 top-2 text-gray-400">$</span>
                             <input type="number" id="modal_amount" name="amount" step="0.01" min="0.01" class="w-full pl-8 pr-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" required>
                         </div>
+                        @error('amount')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label for="modal_description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
                         <input type="text" id="modal_description" name="description" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Transaction description">
+                        @error('description')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Date -->
@@ -414,12 +444,12 @@
             if (type === 'transfer') {
                 toAccountSection.style.display = 'block';
                 categorySection.style.display = 'none';
-                document.getElementById('modal_to_account_id').required = true;
+                document.getElementById('modal_transfer_account_id').required = true;
                 categorySelect.required = false;
             } else {
                 toAccountSection.style.display = 'none';
                 categorySection.style.display = 'block';
-                document.getElementById('modal_to_account_id').required = false;
+                document.getElementById('modal_transfer_account_id').required = false;
                 categorySelect.required = true;
 
                 // Filter categories by type

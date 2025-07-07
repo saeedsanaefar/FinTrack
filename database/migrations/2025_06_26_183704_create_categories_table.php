@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->enum('type', ['income', 'expense', 'both'])->default('expense');
             $table->string('color', 7)->default('#6B7280'); // Hex color code
             $table->string('icon')->nullable();

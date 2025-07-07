@@ -10,9 +10,16 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('throttle:60,1')->only(['store', 'update', 'destroy']);
+        $this->middleware('throttle:100,1')->only(['index', 'show']);
+    }
+
     // Authentication is handled via route middleware in web.php
 
     /**
@@ -23,28 +30,40 @@ class TransactionController extends Controller
         $query = Transaction::where('user_id', auth()->id())
             ->with(['account', 'category', 'transferAccount'])
             ->orderBy('date', 'desc');
-        
+
         // Apply filters
         if ($request->filled('account_id')) {
             $query->where('account_id', $request->account_id);
         }
-        
+
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
-        
+
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
+
+        // Date filters - support both old and new parameter names
+        if ($request->filled('date_from') || $request->filled('start_date')) {
+            $startDate = $request->date_from ?: $request->start_date;
+            $query->whereDate('date', '>=', $startDate);
         }
-        
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
+
+        if ($request->filled('date_to') || $request->filled('end_date')) {
+            $endDate = $request->date_to ?: $request->end_date;
+            $query->whereDate('date', '<=', $endDate);
         }
-        
+
+        // Amount filters
+        if ($request->filled('min_amount')) {
+            $query->where('amount', '>=', $request->min_amount);
+        }
+
+        if ($request->filled('max_amount')) {
+            $query->where('amount', '<=', $request->max_amount);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -53,20 +72,20 @@ class TransactionController extends Controller
                   ->orWhere('notes', 'like', "%{$search}%");
             });
         }
-        
+
         $transactions = $query->paginate(20)->withQueryString();
-        
+
         // Get filter options
         $accounts = Account::where('user_id', auth()->id())
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-            
+
         $categories = Category::where('user_id', auth()->id())
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-        
+
         return view('transactions.index', compact('transactions', 'accounts', 'categories'));
     }
 
@@ -79,13 +98,13 @@ class TransactionController extends Controller
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-            
+
         $categories = Category::where('user_id', auth()->id())
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
-        
+
         return view('transactions.create', compact('accounts', 'categories'));
     }
 
@@ -94,50 +113,53 @@ class TransactionController extends Controller
      */
     public function store(CreateTransactionRequest $request): RedirectResponse
     {
+        Log::info('Creating transaction with data:', $request->validated());
+
         try {
             DB::beginTransaction();
-            
+
             $validated = $request->validated();
+            Log::info('Validated data:', $validated);
             $validated['user_id'] = auth()->id();
-            
+
+            $account = Account::findOrFail($validated['account_id']);
+            Log::info('Found account:', ['id' => $account->id, 'balance' => $account->balance]);
+
+            $category = Category::findOrFail($validated['category_id']);
+            Log::info('Found category:', ['id' => $category->id, 'name' => $category->name]);
+
             // Create the transaction
             $transaction = Transaction::create($validated);
-            
-            // Update account balance
-            $account = Account::findOrFail($validated['account_id']);
-            
-            if ($validated['type'] === 'income') {
-                $account->increment('balance', $validated['amount']);
-            } elseif ($validated['type'] === 'expense') {
-                $account->decrement('balance', $validated['amount']);
-            } elseif ($validated['type'] === 'transfer' && isset($validated['transfer_account_id'])) {
-                // Handle transfer between accounts
+
+            Log::info('Transaction created', ['transaction' => $transaction->toArray()]);
+
+            // For transfer transactions, update both account balances directly
+            if ($validated['type'] === 'transfer' && isset($validated['transfer_account_id'])) {
                 $transferAccount = Account::findOrFail($validated['transfer_account_id']);
-                
+                Log::info('Found transfer account:', ['id' => $transferAccount->id, 'balance' => $transferAccount->balance]);
+
+                // Update source account (subtract amount)
                 $account->decrement('balance', $validated['amount']);
+
+                // Update destination account (add amount)
                 $transferAccount->increment('balance', $validated['amount']);
-                
-                // Create corresponding transfer transaction
-                $transferTransaction = Transaction::create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $validated['transfer_account_id'],
-                    'category_id' => $validated['category_id'],
-                    'description' => 'Transfer from ' . $account->name,
-                    'amount' => $validated['amount'],
-                    'type' => 'transfer',
-                    'date' => $validated['date'],
-                    'transfer_account_id' => $validated['account_id'],
-                    'transfer_transaction_id' => $transaction->id,
-                ]);
-                
-                $transaction->update(['transfer_transaction_id' => $transferTransaction->id]);
+
+                Log::info('Updated balances - From account:', ['id' => $account->id, 'new_balance' => $account->fresh()->balance]);
+                Log::info('Updated balances - To account:', ['id' => $transferAccount->id, 'new_balance' => $transferAccount->fresh()->balance]);
+            } else {
+                // For non-transfer transactions, update the account balance
+                if ($validated['type'] === 'income') {
+                    $account->increment('balance', $validated['amount']);
+                } elseif ($validated['type'] === 'expense') {
+                    $account->decrement('balance', $validated['amount']);
+                }
             }
-            
+
             DB::commit();
-            
+
             return redirect()->route('transactions.index')
                 ->with('success', 'Transaction created successfully.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()
@@ -150,10 +172,8 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction): View
     {
-        $this->authorize('view', $transaction);
-        
         $transaction->load(['account', 'category', 'transferAccount', 'transferTransaction']);
-        
+
         return view('transactions.show', compact('transaction'));
     }
 
@@ -162,22 +182,19 @@ class TransactionController extends Controller
      */
     public function edit(Transaction $transaction): View
     {
-        $this->authorize('update', $transaction);
-        
+
         $accounts = Account::where('user_id', auth()->id())
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-            
+
         $categories = Category::where('user_id', auth()->id())
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
-        
+
         return view('transactions.edit', compact('transaction', 'accounts', 'categories'));
-        
-        return view('transactions.edit');
     }
 
     /**
@@ -185,17 +202,15 @@ class TransactionController extends Controller
      */
     public function update(CreateTransactionRequest $request, Transaction $transaction): RedirectResponse
     {
-        $this->authorize('update', $transaction);
-        
         try {
             DB::beginTransaction();
-            
+
             $validated = $request->validated();
             $oldTransaction = $transaction->replicate();
-            
+
             // Reverse the old transaction's effect on account balance
             $oldAccount = Account::findOrFail($transaction->account_id);
-            
+
             if ($transaction->type === 'income') {
                 $oldAccount->decrement('balance', $transaction->amount);
             } elseif ($transaction->type === 'expense') {
@@ -204,19 +219,19 @@ class TransactionController extends Controller
                 $oldTransferAccount = Account::findOrFail($transaction->transfer_account_id);
                 $oldAccount->increment('balance', $transaction->amount);
                 $oldTransferAccount->decrement('balance', $transaction->amount);
-                
+
                 // Delete the corresponding transfer transaction
                 if ($transaction->transfer_transaction_id) {
                     Transaction::where('id', $transaction->transfer_transaction_id)->delete();
                 }
             }
-            
+
             // Update the transaction
             $transaction->update($validated);
-            
+
             // Apply the new transaction's effect on account balance
             $newAccount = Account::findOrFail($validated['account_id']);
-            
+
             if ($validated['type'] === 'income') {
                 $newAccount->increment('balance', $validated['amount']);
             } elseif ($validated['type'] === 'expense') {
@@ -225,28 +240,13 @@ class TransactionController extends Controller
                 $newTransferAccount = Account::findOrFail($validated['transfer_account_id']);
                 $newAccount->decrement('balance', $validated['amount']);
                 $newTransferAccount->increment('balance', $validated['amount']);
-                
-                // Create new corresponding transfer transaction
-                $transferTransaction = Transaction::create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $validated['transfer_account_id'],
-                    'category_id' => $validated['category_id'],
-                    'description' => 'Transfer from ' . $newAccount->name,
-                    'amount' => $validated['amount'],
-                    'type' => 'transfer',
-                    'date' => $validated['date'],
-                    'transfer_account_id' => $validated['account_id'],
-                    'transfer_transaction_id' => $transaction->id,
-                ]);
-                
-                $transaction->update(['transfer_transaction_id' => $transferTransaction->id]);
             }
-            
+
             DB::commit();
-            
+
             return redirect()->route('transactions.index')
                 ->with('success', 'Transaction updated successfully.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()
@@ -259,14 +259,13 @@ class TransactionController extends Controller
      */
     public function destroy(Transaction $transaction): RedirectResponse
     {
-        $this->authorize('delete', $transaction);
-        
+
         try {
             DB::beginTransaction();
-            
+
             // Reverse the transaction's effect on account balance
             $account = Account::findOrFail($transaction->account_id);
-            
+
             if ($transaction->type === 'income') {
                 $account->decrement('balance', $transaction->amount);
             } elseif ($transaction->type === 'expense') {
@@ -275,21 +274,21 @@ class TransactionController extends Controller
                 $transferAccount = Account::findOrFail($transaction->transfer_account_id);
                 $account->increment('balance', $transaction->amount);
                 $transferAccount->decrement('balance', $transaction->amount);
-                
+
                 // Delete the corresponding transfer transaction
                 if ($transaction->transfer_transaction_id) {
                     Transaction::where('id', $transaction->transfer_transaction_id)->delete();
                 }
             }
-            
+
             // Delete the transaction
             $transaction->delete();
-            
+
             DB::commit();
-            
+
             return redirect()->route('transactions.index')
                 ->with('success', 'Transaction deleted successfully.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to delete transaction: ' . $e->getMessage());

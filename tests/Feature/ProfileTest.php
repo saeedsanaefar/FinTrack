@@ -16,6 +16,7 @@ test('profile information can be updated', function () {
     $user = User::factory()->create();
 
     $response = $this
+        ->withoutMiddleware()
         ->actingAs($user)
         ->patch('/profile', [
             'name' => 'Test User',
@@ -37,6 +38,7 @@ test('email verification status is unchanged when the email address is unchanged
     $user = User::factory()->create();
 
     $response = $this
+        ->withoutMiddleware()
         ->actingAs($user)
         ->patch('/profile', [
             'name' => 'Test User',
@@ -54,6 +56,7 @@ test('user can delete their account', function () {
     $user = User::factory()->create();
 
     $response = $this
+        ->withoutMiddleware()
         ->actingAs($user)
         ->delete('/profile', [
             'password' => 'password',
@@ -71,6 +74,7 @@ test('correct password must be provided to delete account', function () {
     $user = User::factory()->create();
 
     $response = $this
+        ->withoutMiddleware()
         ->actingAs($user)
         ->from('/profile')
         ->delete('/profile', [

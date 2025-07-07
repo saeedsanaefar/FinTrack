@@ -12,55 +12,129 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Filters -->
-            <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
+            <!-- Enhanced Filters with Alpine.js -->
+            <div class="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6 mb-6" x-data="transactionFilters()">
                 <div class="p-6">
-                    <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <!-- Account Filter -->
-                        <div>
-                            <label for="account_id" class="block text-sm font-medium text-gray-700 mb-1">Account</label>
-                            <select name="account_id" id="account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">All Accounts</option>
-                                @foreach(auth()->user()->accounts as $account)
-                                    <option value="{{ $account->id }}" {{ request('account_id') == $account->id ? 'selected' : '' }}>
-                                        {{ $account->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                    <form @submit.prevent="applyFilters" class="space-y-4">
+                        <!-- Text Search -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="search" class="block text-sm font-medium text-gray-300 mb-1">Search</label>
+                                <input type="text" id="search" x-model="filters.search" 
+                                    class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Search descriptions...">
+                            </div>
+                            <div>
+                                <label for="date_range" class="block text-sm font-medium text-gray-300 mb-1">Date Range</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="date" x-model="filters.start_date" 
+                                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <input type="date" x-model="filters.end_date" 
+                                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
                         </div>
-
-                        <!-- Category Filter -->
-                        <div>
-                            <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select name="category_id" id="category_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">All Categories</option>
-                                @foreach(auth()->user()->categories as $category)
-                                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        
+                        <!-- Amount Range -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="min_amount" class="block text-sm font-medium text-gray-300 mb-1">Amount Range</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" x-model="filters.min_amount" step="0.01" placeholder="Min"
+                                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <input type="number" x-model="filters.max_amount" step="0.01" placeholder="Max"
+                                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Existing Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <!-- Account Filter -->
+                            <div>
+                                <label for="account_id" class="block text-sm font-medium text-gray-300 mb-1">Account</label>
+                                <select x-model="filters.account_id" id="account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">All Accounts</option>
+                                    @foreach(auth()->user()->accounts as $account)
+                                        <option value="{{ $account->id }}">
+                                            {{ $account->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <!-- Type Filter -->
-                        <div>
-                            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                            <select name="type" id="type" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">All Types</option>
-                                <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>Income</option>
-                                <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>Expense</option>
-                                <option value="transfer" {{ request('type') == 'transfer' ? 'selected' : '' }}>Transfer</option>
-                            </select>
+                            <!-- Category Filter -->
+                            <div>
+                                <label for="category_id" class="block text-sm font-medium text-gray-300 mb-1">Category</label>
+                                <select x-model="filters.category_id" id="category_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">All Categories</option>
+                                    @foreach(auth()->user()->categories as $category)
+                                        <option value="{{ $category->id }}">
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Type Filter -->
+                            <div>
+                                <label for="type" class="block text-sm font-medium text-gray-300 mb-1">Type</label>
+                                <select x-model="filters.type" id="type" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">All Types</option>
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                    <option value="transfer">Transfer</option>
+                                </select>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="flex items-end">
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mr-2">
+                                    <i class="fas fa-search mr-1"></i>Filter
+                                </button>
+                                <button type="button" @click="clearFilters" class="px-4 py-2 bg-gray-600 text-gray-100 rounded-md hover:bg-gray-500 transition-colors">
+                                    <i class="fas fa-times mr-1"></i>Clear
+                                </button>
+                            </div>
                         </div>
-
-                        <!-- Submit Button -->
-                        <div class="flex items-end">
-                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mr-2">
-                                Filter
-                            </button>
-                            <a href="{{ route('transactions.index') }}" class="px-4 py-2 bg-gray-800 border border-gray-500 rounded-md text-gray-100 hover:bg-gray-500 transition-colors">
-                                Clear
-                            </a>
+                        
+                        <!-- Quick Filters -->
+                        <div class="border-t border-gray-600 pt-4">
+                            <h4 class="text-sm font-medium text-gray-300 mb-3">Quick Filters</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" @click="applyQuickFilter('this_month')" 
+                                    class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm hover:bg-blue-700 transition-colors">
+                                    This Month
+                                </button>
+                                <button type="button" @click="applyQuickFilter('last_month')" 
+                                    class="bg-purple-600 text-white px-3 py-1 rounded-full text-sm hover:bg-purple-700 transition-colors">
+                                    Last Month
+                                </button>
+                                <button type="button" @click="applyQuickFilter('this_year')" 
+                                    class="bg-green-600 text-white px-3 py-1 rounded-full text-sm hover:bg-green-700 transition-colors">
+                                    This Year
+                                </button>
+                                <button type="button" @click="applyQuickFilter('income_only')" 
+                                    class="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm hover:bg-emerald-700 transition-colors">
+                                    Income Only
+                                </button>
+                                <button type="button" @click="applyQuickFilter('expenses_only')" 
+                                    class="bg-red-600 text-white px-3 py-1 rounded-full text-sm hover:bg-red-700 transition-colors">
+                                    Expenses Only
+                                </button>
+                                <button type="button" @click="applyQuickFilter('under_50')" 
+                                    class="bg-yellow-600 text-white px-3 py-1 rounded-full text-sm hover:bg-yellow-700 transition-colors">
+                                    Under $50
+                                </button>
+                                <button type="button" @click="applyQuickFilter('50_to_200')" 
+                                    class="bg-orange-600 text-white px-3 py-1 rounded-full text-sm hover:bg-orange-700 transition-colors">
+                                    $50-$200
+                                </button>
+                                <button type="button" @click="applyQuickFilter('over_200')" 
+                                    class="bg-pink-600 text-white px-3 py-1 rounded-full text-sm hover:bg-pink-700 transition-colors">
+                                    Over $200
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -173,10 +247,22 @@
                         </svg>
                     </button>
                 </div>
-                
+
                 <form method="POST" action="{{ route('transactions.store') }}" id="transactionModalForm" class="space-y-4">
                     @csrf
-                    
+
+                    <!-- Display Validation Errors -->
+                    @if ($errors->any())
+                        <div class="bg-red-900 bg-opacity-50 border border-red-600 rounded-lg p-3 mb-4">
+                            <h4 class="text-sm font-semibold text-red-300 mb-2">Please fix the following errors:</h4>
+                            <ul class="text-sm text-red-200 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>• {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <!-- Transaction Type -->
                     <div>
                         <label for="modal_type" class="block text-sm font-medium text-gray-300 mb-1">Transaction Type</label>
@@ -186,8 +272,11 @@
                             <option value="expense">💸 Expense</option>
                             <option value="transfer">🔄 Transfer</option>
                         </select>
+                        @error('type')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    
+
                     <!-- Account -->
                     <div>
                         <label for="modal_account_id" class="block text-sm font-medium text-gray-300 mb-1">From Account</label>
@@ -199,12 +288,15 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('account_id')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    
+
                     <!-- To Account (for transfers) -->
                     <div id="modal-to-account-section" style="display: none;">
-                        <label for="modal_to_account_id" class="block text-sm font-medium text-gray-300 mb-1">To Account</label>
-                        <select id="modal_to_account_id" name="to_account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <label for="modal_transfer_account_id" class="block text-sm font-medium text-gray-300 mb-1">To Account</label>
+                        <select id="modal_transfer_account_id" name="transfer_account_id" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Select destination account...</option>
                             @foreach(auth()->user()->accounts as $account)
                                 <option value="{{ $account->id }}">
@@ -212,8 +304,11 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('transfer_account_id')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    
+
                     <!-- Category -->
                     <div id="modal-category-section">
                         <label for="modal_category_id" class="block text-sm font-medium text-gray-300 mb-1">Category</label>
@@ -225,8 +320,11 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('category_id')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    
+
                     <!-- Amount -->
                     <div>
                         <label for="modal_amount" class="block text-sm font-medium text-gray-300 mb-1">Amount</label>
@@ -234,34 +332,40 @@
                             <span class="absolute left-3 top-2 text-gray-400">$</span>
                             <input type="number" id="modal_amount" name="amount" step="0.01" min="0.01" class="w-full pl-8 pr-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" required>
                         </div>
+                        @error('amount')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    
+
                     <!-- Description -->
                     <div>
                         <label for="modal_description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
                         <input type="text" id="modal_description" name="description" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Transaction description">
+                        @error('description')
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    
+
                     <!-- Date -->
                     <div>
                         <label for="modal_date" class="block text-sm font-medium text-gray-300 mb-1">Date</label>
                         <input type="date" id="modal_date" name="date" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" required>
                     </div>
-                    
+
                     <!-- Reference -->
                     <div>
                         <label for="modal_reference" class="block text-sm font-medium text-gray-300 mb-1">Reference</label>
                         <input type="text" id="modal_reference" name="reference" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Check number, invoice number, etc.">
                         <p class="text-xs text-gray-400 mt-1">Optional reference number or identifier</p>
                     </div>
-                    
+
                     <!-- Notes -->
                     <div>
                         <label for="modal_notes" class="block text-sm font-medium text-gray-300 mb-1">Notes</label>
                         <textarea id="modal_notes" name="notes" rows="2" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="Additional notes about this transaction..."></textarea>
                         <p class="text-xs text-gray-400 mt-1">Optional additional details or notes</p>
                     </div>
-                    
+
                     <!-- Recurring Transaction -->
                     <div class="flex items-center">
                         <input id="modal_is_recurring" name="is_recurring" type="checkbox" value="1" class="h-4 w-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500 focus:ring-2" onchange="toggleModalRecurringOptions()">
@@ -269,11 +373,11 @@
                             🔄 Make this a recurring transaction
                         </label>
                     </div>
-                    
+
                     <!-- Recurring Options -->
                     <div id="modal-recurring-options" class="space-y-3 bg-blue-900 bg-opacity-50 border border-blue-600 rounded-lg p-3" style="display: none;">
                         <h4 class="text-sm font-semibold text-blue-300">Recurring Settings</h4>
-                        
+
                         <div>
                             <label for="modal_recurring_frequency" class="block text-sm font-medium text-gray-300 mb-1">Frequency</label>
                             <select id="modal_recurring_frequency" name="recurring_frequency" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
@@ -283,14 +387,14 @@
                                 <option value="yearly">🎯 Yearly</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label for="modal_recurring_end_date" class="block text-sm font-medium text-gray-300 mb-1">End Date</label>
                             <input type="date" id="modal_recurring_end_date" name="recurring_end_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                             <p class="text-xs text-blue-300 mt-1">Leave empty for indefinite recurring</p>
                         </div>
                     </div>
-                    
+
                     <div class="flex justify-end space-x-3 pt-4">
                         <button type="button" onclick="closeTransactionModal()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
                             Cancel
@@ -308,7 +412,7 @@
         function openTransactionModal() {
             document.getElementById('transactionModal').style.display = 'block';
         }
-        
+
         function closeTransactionModal() {
             document.getElementById('transactionModal').style.display = 'none';
             document.getElementById('transactionModalForm').reset();
@@ -316,12 +420,12 @@
             document.getElementById('modal-category-section').style.display = 'block';
             document.getElementById('modal-recurring-options').style.display = 'none';
         }
-        
+
         function toggleModalRecurringOptions() {
             const checkbox = document.getElementById('modal_is_recurring');
             const options = document.getElementById('modal-recurring-options');
             const frequencySelect = document.getElementById('modal_recurring_frequency');
-            
+
             if (checkbox.checked) {
                 options.style.display = 'block';
                 frequencySelect.required = true;
@@ -330,24 +434,24 @@
                 frequencySelect.required = false;
             }
         }
-        
+
         function updateModalCategoryOptions() {
             const type = document.getElementById('modal_type').value;
             const categorySelect = document.getElementById('modal_category_id');
             const toAccountSection = document.getElementById('modal-to-account-section');
             const categorySection = document.getElementById('modal-category-section');
-            
+
             if (type === 'transfer') {
                 toAccountSection.style.display = 'block';
                 categorySection.style.display = 'none';
-                document.getElementById('modal_to_account_id').required = true;
+                document.getElementById('modal_transfer_account_id').required = true;
                 categorySelect.required = false;
             } else {
                 toAccountSection.style.display = 'none';
                 categorySection.style.display = 'block';
-                document.getElementById('modal_to_account_id').required = false;
+                document.getElementById('modal_transfer_account_id').required = false;
                 categorySelect.required = true;
-                
+
                 // Filter categories by type
                 const options = categorySelect.querySelectorAll('option');
                 options.forEach(option => {
@@ -364,12 +468,120 @@
                 });
             }
         }
-        
+
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('transactionModal');
             if (event.target === modal) {
                 closeTransactionModal();
+            }
+        }
+
+        // Alpine.js component for transaction filters
+        function transactionFilter() {
+            return {
+                filters: {
+                    search: '',
+                    account_id: '',
+                    category_id: '',
+                    type: '',
+                    start_date: '',
+                    end_date: '',
+                    min_amount: '',
+                    max_amount: ''
+                },
+                loading: false,
+                transactions: [],
+                pagination: {},
+
+                init() {
+                    // Initialize with current URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.filters.search = urlParams.get('search') || '';
+                    this.filters.account_id = urlParams.get('account_id') || '';
+                    this.filters.category_id = urlParams.get('category_id') || '';
+                    this.filters.type = urlParams.get('type') || '';
+                    this.filters.start_date = urlParams.get('start_date') || '';
+                    this.filters.end_date = urlParams.get('end_date') || '';
+                    this.filters.min_amount = urlParams.get('min_amount') || '';
+                    this.filters.max_amount = urlParams.get('max_amount') || '';
+                },
+
+                applyFilters() {
+                    this.loading = true;
+                    
+                    // Build query string
+                    const params = new URLSearchParams();
+                    Object.keys(this.filters).forEach(key => {
+                        if (this.filters[key]) {
+                            params.append(key, this.filters[key]);
+                        }
+                    });
+                    
+                    // Redirect with filters
+                    window.location.href = '{{ route("transactions.index") }}?' + params.toString();
+                },
+
+                clearFilters() {
+                    this.filters = {
+                        search: '',
+                        account_id: '',
+                        category_id: '',
+                        type: '',
+                        start_date: '',
+                        end_date: '',
+                        min_amount: '',
+                        max_amount: ''
+                    };
+                    window.location.href = '{{ route("transactions.index") }}';
+                },
+
+                applyQuickFilter(type) {
+                    const today = new Date();
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+                    
+                    switch(type) {
+                        case 'today':
+                            this.filters.start_date = this.formatDate(new Date());
+                            this.filters.end_date = this.formatDate(new Date());
+                            break;
+                        case 'week':
+                            this.filters.start_date = this.formatDate(startOfWeek);
+                            this.filters.end_date = this.formatDate(endOfWeek);
+                            break;
+                        case 'month':
+                            this.filters.start_date = this.formatDate(startOfMonth);
+                            this.filters.end_date = this.formatDate(endOfMonth);
+                            break;
+                        case 'income':
+                            this.filters.type = 'income';
+                            break;
+                        case 'expense':
+                            this.filters.type = 'expense';
+                            break;
+                        case 'transfer':
+                            this.filters.type = 'transfer';
+                            break;
+                        case 'low':
+                            this.filters.max_amount = '50';
+                            break;
+                        case 'medium':
+                            this.filters.min_amount = '50';
+                            this.filters.max_amount = '200';
+                            break;
+                        case 'high':
+                            this.filters.min_amount = '200';
+                            break;
+                    }
+                    this.applyFilters();
+                },
+
+                formatDate(date) {
+                    return date.toISOString().split('T')[0];
+                }
             }
         }
     </script>

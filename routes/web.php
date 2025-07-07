@@ -7,6 +7,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
@@ -67,6 +68,20 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update-password');
     Route::get('/settings/export-data', [SettingsController::class, 'exportData'])->name('settings.export-data');
     Route::delete('/settings/delete-account', [SettingsController::class, 'deleteAccount'])->name('settings.delete-account');
+
+    // Privacy and Data Protection Routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/privacy', [PrivacyController::class, 'index'])->name('privacy.index');
+        Route::get('/privacy/download-data', [PrivacyController::class, 'downloadData'])->name('privacy.download-data');
+        Route::get('/privacy/delete-account', [PrivacyController::class, 'showDeleteAccount'])->name('privacy.delete-account');
+        Route::delete('/privacy/delete-account', [PrivacyController::class, 'deleteAccount']);
+    });
+
+    // Rate limited API routes
+    Route::middleware(['auth', 'throttle:api'])->prefix('api')->group(function () {
+        Route::get('/transactions', [TransactionController::class, 'apiIndex']);
+        Route::post('/transactions', [TransactionController::class, 'apiStore']);
+    });
 });
 
 require __DIR__.'/auth.php';

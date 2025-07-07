@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('throttle:60,1')->only(['store', 'update', 'destroy']);
+        $this->middleware('throttle:100,1')->only(['index', 'show']);
+    }
+
     // Authentication is handled via route middleware in web.php
 
     /**

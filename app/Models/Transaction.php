@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Transaction extends Model
 {
@@ -41,13 +42,13 @@ class Transaction extends Model
     public function resolveRouteBinding($value, $field = null)
     {
         $query = $this->where($field ?? $this->getRouteKeyName(), $value);
-        
+
         // Scope by user_id if user is authenticated (including test scenarios)
         $user = auth()->user();
         if ($user) {
             $query->where('user_id', $user->id);
         }
-        
+
         return $query->first();
     }
 
@@ -166,27 +167,27 @@ class Transaction extends Model
     public function updateAccountBalance()
     {
         $account = $this->account;
-        
+
         // Calculate total balance for this account
         $balance = $account->transactions()
             ->where('type', 'income')->sum('amount') -
             $account->transactions()
             ->where('type', 'expense')->sum('amount');
-            
+
         // Handle transfers
         // Transfers OUT: when this account creates a transfer (money going out)
         $transfersOut = $account->transactions()
             ->where('type', 'transfer')
             ->whereNotNull('transfer_account_id')
             ->sum('amount');
-            
+
         // Transfers IN: when this account receives a transfer (money coming in)
         $transfersIn = Transaction::where('transfer_account_id', $account->id)
             ->where('type', 'transfer')
             ->sum('amount');
-            
+
         $balance = $balance - $transfersOut + $transfersIn;
-        
+
         $account->update(['balance' => $balance]);
     }
 
@@ -196,7 +197,7 @@ class Transaction extends Model
     public function reverseAccountBalance()
     {
         $account = $this->account;
-        
+
         if ($this->type === 'income') {
             $account->decrement('balance', $this->amount);
         } elseif ($this->type === 'expense') {
@@ -209,4 +210,20 @@ class Transaction extends Model
             }
         }
     }
+
+    /**
+     * Encrypt/decrypt sensitive notes
+     */
+    protected function notes(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? decrypt($value) : null,
+            set: fn ($value) => $value ? encrypt($value) : null,
+        );
+    }
+
+    /**
+     * Hide sensitive data from serialization
+     */
+    protected $hidden = ['notes_encrypted'];
 }

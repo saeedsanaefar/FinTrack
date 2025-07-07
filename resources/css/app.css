@@ -1,3 +1,101 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile-First Design Optimizations */
+
+/* Transaction cards on mobile */
+@media (max-width: 768px) {
+    .transaction-card {
+        @apply p-3 border-b border-gray-100 bg-white;
+    }
+
+    .transaction-amount {
+        @apply text-lg font-bold;
+    }
+
+    .account-card {
+        @apply mb-4 p-4 rounded-lg shadow-sm bg-white;
+    }
+
+    .quick-actions {
+        @apply fixed bottom-4 right-4 z-50;
+    }
+
+    .mobile-nav {
+        @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2;
+    }
+
+    .mobile-nav-item {
+        @apply flex-1 text-center py-2 text-sm;
+    }
+
+    .dashboard-grid {
+        @apply grid-cols-1 gap-4;
+    }
+
+    .form-container {
+        @apply p-4 mx-2;
+    }
+
+    .btn-mobile {
+        @apply w-full py-3 text-base;
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dashboard-grid {
+        @apply grid-cols-2 gap-6;
+    }
+
+    .transaction-card {
+        @apply p-4;
+    }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    .card {
+        @apply bg-gray-800 border-gray-700 text-white;
+    }
+
+    .transaction-card:hover {
+        @apply bg-gray-700;
+    }
+
+    .mobile-nav {
+        @apply bg-gray-800 border-gray-700;
+    }
+
+    .form-container {
+        @apply bg-gray-800;
+    }
+}
+
+/* Enhanced form styles */
+.smart-input {
+    @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+}
+
+.suggestion-chip {
+    @apply inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full mr-2 mb-2 text-sm cursor-pointer hover:bg-blue-200 transition-colors;
+}
+
+.calculator-display {
+    @apply text-sm text-gray-600 mt-1 font-mono;
+}
+
+/* Loading states */
+.loading-skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Responsive utilities */
+.hide-mobile {
+    @apply hidden md:block;
+}
+
+.show-mobile {
+    @apply block md:hidden;
+}

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CreateTransactionRequest extends FormRequest
 {
@@ -12,92 +11,45 @@ class CreateTransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        return true;
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'description' => strip_tags($this->description ?? ''),
+            'notes' => strip_tags($this->notes ?? ''),
+        ]);
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        $rules = [
-            'account_id' => [
-                'required',
-                'integer',
-                Rule::exists('accounts', 'id')->where(function ($query) {
-                    return $query->where('user_id', auth()->id());
-                })
-            ],
-            'category_id' => [
-                'required',
-                'integer',
-                Rule::exists('categories', 'id')->where(function ($query) {
-                    return $query->where('user_id', auth()->id());
-                })
-            ],
-            'description' => 'nullable|string|max:255',
-            'amount' => 'required|numeric|min:0.01|max:999999999.99',
-            'type' => 'required|in:income,expense,transfer',
-            'date' => 'required|date|before_or_equal:today',
-            'reference' => 'nullable|string|max:100',
+        return [
+            'description' => 'required|string|max:255|regex:/^[a-zA-Z0-9\s\-\.\,\!\?]+$/',
+            'amount' => 'required|numeric|min:0.01|max:999999.99',
             'notes' => 'nullable|string|max:1000',
-            'is_recurring' => 'boolean',
-            'recurring_frequency' => 'nullable|required_if:is_recurring,true|in:daily,weekly,monthly,yearly',
-            'recurring_end_date' => 'nullable|required_if:is_recurring,true|date|after:date',
+            'account_id' => 'required|exists:accounts,id,user_id,' . auth()->id(),
+            'category_id' => 'required|exists:categories,id,user_id,' . auth()->id(),
+            'type' => 'required|in:income,expense',
+            'transaction_date' => 'required|date|before_or_equal:today',
         ];
-
-        // Add transfer-specific validation
-        if ($this->input('type') === 'transfer') {
-            $rules['transfer_account_id'] = [
-                'required',
-                'integer',
-                'different:account_id',
-                Rule::exists('accounts', 'id')->where(function ($query) {
-                    return $query->where('user_id', auth()->id());
-                })
-            ];
-        }
-
-        return $rules;
     }
 
     /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
+     * Get custom error messages.
      */
     public function messages(): array
     {
         return [
-            'account_id.exists' => 'The selected account does not exist or does not belong to you.',
-            'category_id.exists' => 'The selected category does not exist or does not belong to you.',
-            'transfer_account_id.exists' => 'The selected transfer account does not exist or does not belong to you.',
-            'transfer_account_id.different' => 'The transfer account must be different from the source account.',
-            'transfer_account_id.required' => 'A transfer account is required for transfer transactions.',
-            'amount.min' => 'The amount must be at least 0.01.',
-            'amount.max' => 'The amount cannot exceed 999,999,999.99.',
-            'date.before_or_equal' => 'The transaction date cannot be in the future.',
-            'recurring_frequency.required_if' => 'Recurring frequency is required when transaction is recurring.',
-            'recurring_end_date.required_if' => 'Recurring end date is required when transaction is recurring.',
-            'recurring_end_date.after' => 'Recurring end date must be after the transaction date.',
-        ];
-    }
-
-    /**
-     * Get custom attributes for validator errors.
-     *
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'account_id' => 'account',
-            'category_id' => 'category',
-            'transfer_account_id' => 'transfer account',
-            'recurring_frequency' => 'recurring frequency',
-            'recurring_end_date' => 'recurring end date',
+            'description.regex' => 'Description contains invalid characters.',
+            'account_id.exists' => 'Selected account does not belong to you.',
+            'category_id.exists' => 'Selected category does not belong to you.',
         ];
     }
 }

@@ -101,6 +101,11 @@
                             {{ __('Settings') }}
                         </x-dropdown-link>
 
+                        <!-- Add to the dropdown menu -->
+                        <x-dropdown-link :href="route('privacy.index')">
+                            {{ __('Privacy & Data') }}
+                        </x-dropdown-link>
+
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

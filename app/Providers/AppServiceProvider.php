@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Transaction;
+use App\Models\Account;
+use App\Models\Budget;
+use App\Observers\TransactionObserver;
+use App\Observers\AccountObserver;
+use App\Observers\BudgetObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register model observers for cache invalidation
+        Transaction::observe(TransactionObserver::class);
+        Account::observe(AccountObserver::class);
+        Budget::observe(BudgetObserver::class);
     }
 }

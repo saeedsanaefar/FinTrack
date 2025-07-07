@@ -90,6 +90,12 @@ return [
             'driver' => 'octane',
         ],
 
+        'dashboard' => [
+            'driver' => 'database',
+            'connection' => env('DB_CACHE_CONNECTION'),
+            'table' => 'cache',
+            'prefix' => 'dashboard_',
+        ],
     ],
 
     /*

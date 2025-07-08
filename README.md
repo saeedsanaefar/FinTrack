@@ -61,7 +61,7 @@
 
 | Category | Technology |
 |----------|------------|
-| **Backend** | Laravel 11, PHP 8.2+ |
+| **Backend** | Laravel 12, PHP 8.2+ |
 | **Frontend** | Blade Templates, Alpine.js, Tailwind CSS |
 | **Database** | MySQL 8.0+ / PostgreSQL 14+ |
 | **Caching** | Redis |
